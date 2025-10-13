@@ -9,8 +9,8 @@ export default function Footer() {
       <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-8 text-sm text-gray-600 md:flex-row md:items-center md:justify-between">
         <div>
           <p>© {new Date().getFullYear()} Éclectique by KMC</p>
-          <p className="mt-1 text-xs text-gray-500">
-            Some links are affiliate links. As Amazon Associates we earn from qualifying purchases, at no extra cost to you.
+          <p className="mt-1 text-xs text-gray-500 affiliate-disclosure">
+            Como asociado de Amazon y otros programas de afiliados, ganamos comisiones por compras calificadas realizadas a través de nuestros enlaces. Esto no afecta el precio que pagas.
             <span className="ml-2">
               <a href="/privacy" className="hover:text-accent">Privacy</a> · <a href="/terms" className="hover:text-accent">Terms</a>
             </span>

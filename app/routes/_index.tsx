@@ -1,6 +1,6 @@
 import type { MetaFunction } from "@remix-run/node";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Hero from "../components/Hero";
+import HeroEclectique from "../components/HeroEclectique";
 import Grid from "../components/Grid";
 import Card from "../components/Card";
 import LogoLinks from "../components/LogoLinks";
@@ -8,10 +8,10 @@ import Disclosure from "../components/Disclosure";
 import { content, HOME_COPY, ogImage } from "../content/links";
 
 export const meta: MetaFunction = () => ([
-  { title: HOME_COPY.h1 },
-  { name: "description", content: HOME_COPY.sub },
-  { property: "og:title", content: HOME_COPY.h1 },
-  { property: "og:description", content: HOME_COPY.sub },
+  { title: "Éclectique by KMC | Curated pieces for daily use" },
+  { name: "description", content: "Discover our curated selection of beauty, fashion and accessories to elevate your daily style. Shopping with affiliate links." },
+  { property: "og:title", content: "Your curated daily style | Éclectique by KMC" },
+  { property: "og:description", content: "Handpicked beauty, fashion and accessories for your everyday." },
   { property: "og:type", content: "website" },
   { property: "og:image", content: ogImage },
 ]);
@@ -111,33 +111,10 @@ export default function Index() {
 
   return (
     <main className="min-h-screen flex flex-col">
-      <Hero
-        title={HOME_COPY.h1}
-        subtitle={HOME_COPY.sub}
-        subtitle2={HOME_COPY.sub2}
-        primary={HOME_COPY.ctaPrimary}
-      >
-        {/* Quick links within hero */}
-        <div className="flex flex-wrap gap-3 md:gap-4 items-center">
-          {[
-            { href: '/tiendas', title: 'Shops' },
-            { href: '/afiliados', title: 'Affiliates' },
-            { href: '/otras-plataformas', title: 'Other platforms' },
-            { href: '/guias', title: 'Guides' },
-          ].map((c) => (
-            <a
-              key={c.href}
-              href={c.href}
-              className="inline-flex items-center rounded-md border border-white/30 px-4 md:px-5 py-2.5 md:py-3 text-sm md:text-base font-semibold hover:bg-white/10"
-            >
-              {c.title}
-            </a>
-          ))}
-        </div>
-      </Hero>
+      <HeroEclectique />
 
       {/* Featured slider */}
-      <section className="bg-white">
+      <section id="featured-products" className="bg-white">
         <div className="mx-auto max-w-6xl px-6 py-6">
           <div className="mb-3 flex items-end justify-between">
             <h2 className="text-xl md:text-2xl font-bold">Explore now</h2>
@@ -219,6 +196,27 @@ export default function Index() {
               ))}
             </Grid>
           )}
+        </div>
+      </section>
+
+      {/* CTA Reutilizable */}
+      <section className="bg-neutral-50 py-12">
+        <div className="mx-auto max-w-4xl px-6 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">Ready to elevate your style?</h2>
+          <p className="text-lg text-gray-600 mb-8">Browse our complete curated selection</p>
+          <a 
+            href="#featured-products"
+            className="inline-flex items-center justify-center bg-yellow-600 hover:bg-yellow-700 text-white font-semibold px-8 py-4 rounded-lg transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+            onClick={(e) => {
+              e.preventDefault();
+              const target = document.querySelector('#featured-products');
+              if (target) {
+                target.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
+          >
+            Shop the edit
+          </a>
         </div>
       </section>
 
