@@ -175,12 +175,60 @@ export default function Index() {
             <a href="/afiliados" className="text-sm text-accent hover:underline">View more</a>
           </div>
 
-          {loading ? (
-            <p className="text-sm text-gray-600">Loading...</p>
+          {loading || destacados.length === 0 ? (
+            <Grid>
+              {/* Tarjetas placeholder cuando no hay productos */}
+              <Card
+                title="Curated Beauty Essentials"
+                image="/images/featured/serum.webp"
+                href="#featured-products"
+                note="From $15"
+                label="Shop Now"
+                tags={["Beauty", "Featured"]}
+              />
+              <Card
+                title="Daily Fashion Picks"
+                image="/images/featured/blazer.webp"
+                href="#featured-products"
+                note="From $25"
+                label="Shop Now"
+                tags={["Fashion", "Featured"]}
+              />
+              <Card
+                title="Home Organization"
+                image="/images/featured/organizer.webp"
+                href="#featured-products"
+                note="From $12"
+                label="Shop Now"
+                tags={["Home", "Featured"]}
+              />
+              <Card
+                title="Style Accessories"
+                image="/images/featured/sneakers.webp"
+                href="#featured-products"
+                note="From $30"
+                label="Shop Now"
+                tags={["Accessories", "Featured"]}
+              />
+              <Card
+                title="Beauty Tools"
+                image="/images/featured/flatiron.webp"
+                href="#featured-products"
+                note="From $20"
+                label="Shop Now"
+                tags={["Beauty", "Tools"]}
+              />
+              <Card
+                title="Storage Solutions"
+                image="/images/featured/boxes.webp"
+                href="#featured-products"
+                note="From $18"
+                label="Shop Now"
+                tags={["Organization", "Home"]}
+              />
+            </Grid>
           ) : error ? (
             <p className="text-sm text-red-700">{error}</p>
-          ) : destacados.length === 0 ? (
-            <p className="text-sm text-gray-600">No featured items right now.</p>
           ) : (
             <Grid>
               {destacados.map((p) => (
@@ -230,12 +278,44 @@ export default function Index() {
               <a href="/afiliados" className="text-sm text-accent hover:underline">Affiliates</a>
             </div>
           </div>
-          {loading ? (
-            <p className="text-sm text-gray-600">Loading...</p>
+          {loading || ultimos.length === 0 ? (
+            <Grid>
+              {/* Tarjetas placeholder para New Arrivals */}
+              <Card
+                title="Fresh Beauty Discoveries"
+                image="/images/aff/serum.webp"
+                href="#featured-products"
+                note="New"
+                label="Discover"
+                tags={["Beauty", "New"]}
+              />
+              <Card
+                title="Latest Fashion Finds"
+                image="/images/aff/boots.webp"
+                href="#featured-products"
+                note="New"
+                label="Discover"
+                tags={["Fashion", "New"]}
+              />
+              <Card
+                title="Smart Home Additions"
+                image="/images/aff/organizer.webp"
+                href="#featured-products"
+                note="New"
+                label="Discover"
+                tags={["Home", "New"]}
+              />
+              <Card
+                title="Trending Accessories"
+                image="/images/aff/diffuser.webp"
+                href="#featured-products"
+                note="New"
+                label="Discover"
+                tags={["Accessories", "New"]}
+              />
+            </Grid>
           ) : error ? (
             <p className="text-sm text-red-700">{error}</p>
-          ) : ultimos.length === 0 ? (
-            <p className="text-sm text-gray-600">No new arrivals right now.</p>
           ) : (
             <Grid>
               {ultimos.map((p) => (

@@ -24,14 +24,18 @@ const HeroEclectique: React.FC<HeroEclectiqueProps> = ({ className = '' }) => {
 
   const handleLanguageChange = (lang: 'en' | 'es') => {
     setLanguage(lang);
-    document.documentElement.lang = lang;
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = lang;
+    }
   };
 
   const handleCtaClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
-    const target = document.querySelector('#featured-products');
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth' });
+    if (typeof document !== 'undefined') {
+      const target = document.querySelector('#featured-products');
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 
@@ -62,8 +66,9 @@ const HeroEclectique: React.FC<HeroEclectiqueProps> = ({ className = '' }) => {
           min-height: 70vh;
           display: flex;
           align-items: center;
-          padding: 2rem 1rem;
-          background-color: var(--color-background);
+          padding: 3rem 1rem;
+          background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+          border-bottom: 1px solid #e5e5e5;
         }
 
         .hero-container {
@@ -84,8 +89,10 @@ const HeroEclectique: React.FC<HeroEclectiqueProps> = ({ className = '' }) => {
           width: 100%;
           max-width: 500px;
           height: auto;
-          border-radius: 8px;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+          border-radius: 12px;
+          box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+          object-fit: cover;
+          aspect-ratio: 4/5;
         }
 
         .hero-content {
@@ -172,7 +179,9 @@ const HeroEclectique: React.FC<HeroEclectiqueProps> = ({ className = '' }) => {
         .trust-copy {
           font-size: 0.75rem;
           color: var(--color-text-light);
-          opacity: 0.8;
+          opacity: 0.9;
+          font-style: italic;
+          margin-top: 0.5rem;
         }
 
         /* Desktop */
@@ -185,6 +194,11 @@ const HeroEclectique: React.FC<HeroEclectiqueProps> = ({ className = '' }) => {
           .hero-image {
             order: 1;
             text-align: left;
+          }
+
+          .hero-image img {
+            aspect-ratio: 3/2;
+            max-width: 600px;
           }
 
           .hero-content {

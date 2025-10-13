@@ -5,8 +5,8 @@ import Card from "../components/Card";
 import { content } from "../content/links";
 
 export const meta: MetaFunction = () => ([
-  { title: "Tiendas | Éclectique by KMC" },
-  { name: "description", content: "Publicaciones individuales de Poshmark, Mercari, eBay y TikTok Showcase." },
+  { title: "Our Shops | Éclectique by KMC" },
+  { name: "description", content: "Explore our curated shops across multiple platforms - Poshmark, Mercari, eBay and more." },
 ]);
 
 type Producto = {
