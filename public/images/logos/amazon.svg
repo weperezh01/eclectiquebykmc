@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="8" fill="#232F3E"/>
+  <!-- Amazon text -->
+  <text x="32" y="24" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#FF9900">amazon</text>
+  <!-- Amazon smile arrow -->
+  <path d="M12 40 Q32 50 52 40" stroke="#FF9900" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Arrow tip -->
+  <path d="M48 37 L52 40 L48 43" stroke="#FF9900" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+

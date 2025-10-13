@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login - Éclectique by KMC</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        button { background: #1a1a1a; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #333; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 5px; white-space: pre-wrap; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #e2e3e5; border: 1px solid #d6d8db; color: #383d41; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test de Login - Éclectique by KMC</h1>
+    <p>Esta página prueba la integración frontend-backend directamente.</p>
+    
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" value="admin@eclectiquebykmc.com" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Contraseña:</label>
+            <input type="password" id="password" value="Admin2024!KMC" required>
+        </div>
+        <button type="submit">🔑 Probar Login</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <hr style="margin: 40px 0;">
+    
+    <h2>📊 Tests Disponibles</h2>
+    <button onclick="testBackendDirect()">🎯 Test Backend Directo</button>
+    <button onclick="testFrontendProxy()">🔄 Test Frontend Proxy</button>
+    <button onclick="testHealth()">🩺 Test Health Check</button>
+    
+    <script>
+        const resultDiv = document.getElementById('result');
+        
+        function showResult(message, type = 'info') {
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+        
+        async function testBackendDirect() {
+            showResult('Probando conexión directa al backend...', 'info');
+            try {
+                const response = await fetch('http://localhost:8020/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@eclectiquebykmc.com',
+                        password: 'Admin2024!KMC'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(`✅ BACKEND DIRECTO - ÉXITO:\\n${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    showResult(`❌ BACKEND DIRECTO - ERROR:\\n${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ BACKEND DIRECTO - ERROR CONEXIÓN:\\n${error.message}`, 'error');
+            }
+        }
+        
+        async function testFrontendProxy() {
+            showResult('Probando proxy del frontend...', 'info');
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@eclectiquebykmc.com',
+                        password: 'Admin2024!KMC'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(`✅ FRONTEND PROXY - ÉXITO:\\n${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    showResult(`❌ FRONTEND PROXY - ERROR:\\n${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ FRONTEND PROXY - ERROR CONEXIÓN:\\n${error.message}`, 'error');
+            }
+        }
+        
+        async function testHealth() {
+            showResult('Probando health check...', 'info');
+            try {
+                const response = await fetch('http://localhost:8020/health');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(`✅ HEALTH CHECK - ÉXITO:\\n${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    showResult(`❌ HEALTH CHECK - ERROR:\\n${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ HEALTH CHECK - ERROR CONEXIÓN:\\n${error.message}`, 'error');
+            }
+        }
+        
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            showResult('Probando login...', 'info');
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(`✅ LOGIN EXITOSO:\\nToken: ${data.access_token}\\nUsuario: ${data.user.email}\\nRol: ${data.user.rol}`, 'success');
+                } else {
+                    showResult(`❌ LOGIN FALLIDO:\\n${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ ERROR DE CONEXIÓN:\\n${error.message}`, 'error');
+            }
+        });
+        
+        // Auto-test al cargar
+        setTimeout(() => {
+            testHealth();
+        }, 1000);
+    </script>
+</body>
+</html>

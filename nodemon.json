@@ -1,0 +1,8 @@
+{
+  "watch": ["app", "public"],
+  "ext": "ts tsx js css",
+  "exec": "npm run build && npm run start",
+  "signal": "SIGTERM",
+  "delay": 200
+}
+

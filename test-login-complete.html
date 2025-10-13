@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login Completo - Éclectique by KMC</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #1a1a1a;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test de Login Completo</h1>
+    <p>Este test verifica la funcionalidad de autenticación conectándose directamente al backend.</p>
+    
+    <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" value="admin@eclectiquebykmc.com" required>
+    </div>
+    
+    <div class="form-group">
+        <label for="password">Contraseña:</label>
+        <input type="password" id="password" value="Admin2024!KMC" required>
+    </div>
+    
+    <button onclick="testLogin()" id="loginBtn">Probar Login</button>
+    <button onclick="testRegister()" id="registerBtn">Probar Registro</button>
+    <button onclick="testMe()" id="meBtn" disabled>Verificar Token</button>
+    
+    <div id="result"></div>
+    
+    <script>
+        let currentToken = null;
+        const BACKEND_URL = 'http://localhost:8020';
+        
+        function showResult(message, type = 'info') {
+            const result = document.getElementById('result');
+            result.textContent = message;
+            result.className = `result ${type}`;
+        }
+        
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            
+            if (!email || !password) {
+                showResult('Por favor ingresa email y contraseña', 'error');
+                return;
+            }
+            
+            loginBtn.disabled = true;
+            showResult('Realizando login...', 'info');
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    currentToken = data.data.token;
+                    document.getElementById('meBtn').disabled = false;
+                    showResult(`✅ LOGIN EXITOSO
+Usuario: ${data.data.user.nombre} ${data.data.user.apellido}
+Email: ${data.data.user.email}
+Rol: ${data.data.user.rol}
+Token: ${currentToken.substring(0, 50)}...`, 'success');
+                } else {
+                    showResult(`❌ ERROR DE LOGIN: ${data.message || 'Error desconocido'}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ ERROR DE CONEXIÓN: ${error.message}`, 'error');
+            } finally {
+                loginBtn.disabled = false;
+            }
+        }
+        
+        async function testRegister() {
+            const registerBtn = document.getElementById('registerBtn');
+            registerBtn.disabled = true;
+            showResult('Probando registro con usuario de test...', 'info');
+            
+            const testEmail = `test${Date.now()}@test.com`;
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: testEmail,
+                        password: 'TestPass123!',
+                        nombre: 'Usuario',
+                        apellido: 'Test'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    showResult(`✅ REGISTRO EXITOSO
+Email: ${testEmail}
+Usuario: ${data.data.user.nombre} ${data.data.user.apellido}
+ID: ${data.data.user.id}
+Token: ${data.data.token.substring(0, 50)}...`, 'success');
+                } else {
+                    showResult(`❌ ERROR DE REGISTRO: ${data.message || 'Error desconocido'}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ ERROR DE CONEXIÓN: ${error.message}`, 'error');
+            } finally {
+                registerBtn.disabled = false;
+            }
+        }
+        
+        async function testMe() {
+            if (!currentToken) {
+                showResult('❌ No hay token disponible. Haz login primero.', 'error');
+                return;
+            }
+            
+            const meBtn = document.getElementById('meBtn');
+            meBtn.disabled = true;
+            showResult('Verificando token...', 'info');
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    showResult(`✅ TOKEN VÁLIDO
+Usuario: ${data.data.user.nombre} ${data.data.user.apellido}
+Email: ${data.data.user.email}
+Rol: ${data.data.user.rol}
+Fecha creación: ${new Date(data.data.user.fechaCreacion).toLocaleString()}
+ID: ${data.data.user.id}`, 'success');
+                } else {
+                    showResult(`❌ TOKEN INVÁLIDO: ${data.message || 'Error desconocido'}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ ERROR DE CONEXIÓN: ${error.message}`, 'error');
+            } finally {
+                meBtn.disabled = false;
+            }
+        }
+        
+        // Test automático al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            showResult('🚀 Test listo. Usa las credenciales pre-cargadas para probar el login.', 'info');
+        });
+    </script>
+</body>
+</html>
