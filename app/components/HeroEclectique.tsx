@@ -92,8 +92,7 @@ const HeroEclectique: React.FC<HeroEclectiqueProps> = ({ className = '' }) => {
           height: auto;
           border-radius: 12px;
           box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-          object-fit: cover;
-          aspect-ratio: 4/5;
+          object-fit: contain;
         }
 
         .hero-content {
@@ -198,7 +197,6 @@ const HeroEclectique: React.FC<HeroEclectiqueProps> = ({ className = '' }) => {
           }
 
           .hero-image img {
-            aspect-ratio: 3/2;
             max-width: 600px;
           }
 
