@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import HeroShortcuts from './HeroShortcuts';
 
 interface HeroEclectiqueProps {
   className?: string;
@@ -296,6 +297,8 @@ const HeroEclectique: React.FC<HeroEclectiqueProps> = ({ className = '' }) => {
             <p className="trust-copy" id="trust-copy">
               {content[language].trust}
             </p>
+            
+            <HeroShortcuts />
           </div>
         </div>
       </section>
