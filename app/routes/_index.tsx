@@ -1,11 +1,14 @@
-import type { MetaFunction } from "@remix-run/node";
+import type { MetaFunction, ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useActionData, useLoaderData, Form } from "@remix-run/react";
 import Hero from "../components/Hero";
 import Grid from "../components/Grid";
 import Card from "../components/Card";
 import LogoLinks from "../components/LogoLinks";
 import Disclosure from "../components/Disclosure";
 import { content, HOME_COPY, ogImage } from "../content/links";
+import { pool } from "../lib/db";
 
 export const meta: MetaFunction = () => ([
   { title: HOME_COPY.h1 },
@@ -15,6 +18,93 @@ export const meta: MetaFunction = () => ([
   { property: "og:type", content: "website" },
   { property: "og:image", content: ogImage },
 ]);
+
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  // Check if user is authenticated and is admin
+  let isAdmin = false;
+  try {
+    const authHeader = request.headers.get('Authorization');
+    const cookieHeader = request.headers.get('Cookie');
+
+    const backendUrl = process.env.NODE_ENV === 'production'
+      ? 'http://eclectique-backend:8020'
+      : 'http://localhost:8020';
+
+    const headers: Record<string, string> = { 'Accept': 'application/json' };
+    if (authHeader) headers['Authorization'] = authHeader;
+    if (cookieHeader) headers['Cookie'] = cookieHeader;
+
+    const response = await fetch(`${backendUrl}/api/auth/me`, {
+      method: 'GET',
+      headers,
+    });
+
+    if (response.ok) {
+      const userData = await response.json();
+      isAdmin = userData?.is_admin === true;
+    }
+  } catch (error) {
+    // If auth fails, isAdmin remains false
+    console.log('Auth check failed:', error);
+  }
+  
+  return json({ isAdmin });
+};
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const formData = await request.formData();
+  const email = formData.get("email")?.toString()?.trim();
+  const actionType = formData.get("action")?.toString();
+
+  if (actionType !== "newsletter") {
+    return json({ error: "Invalid action" }, { status: 400 });
+  }
+
+  if (!email) {
+    return json({ error: "Email is required" }, { status: 400 });
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return json({ error: "Please enter a valid email address" }, { status: 400 });
+  }
+
+  const client = await pool.connect();
+  try {
+    // Check if email already exists
+    const existingResult = await client.query(
+      'SELECT id, is_active FROM newsletter_subscriptions WHERE email = $1',
+      [email]
+    );
+
+    if (existingResult.rows.length > 0) {
+      const existing = existingResult.rows[0];
+      if (existing.is_active) {
+        return json({ error: "You're already subscribed to our newsletter" }, { status: 400 });
+      } else {
+        // Reactivate subscription
+        await client.query(
+          'UPDATE newsletter_subscriptions SET is_active = true, subscribed_at = CURRENT_TIMESTAMP, unsubscribed_at = NULL WHERE email = $1',
+          [email]
+        );
+        return json({ success: "Welcome back! You've been resubscribed to our newsletter." });
+      }
+    }
+
+    // Create new subscription
+    await client.query(
+      'INSERT INTO newsletter_subscriptions (email, source) VALUES ($1, $2)',
+      [email, 'homepage']
+    );
+
+    return json({ success: "Thank you for subscribing! You'll receive updates about our latest guides and curated selections." });
+  } catch (error) {
+    console.error('Error handling newsletter subscription:', error);
+    return json({ error: "There was an error processing your subscription. Please try again." }, { status: 500 });
+  } finally {
+    client.release();
+  }
+};
 
 type Producto = {
   id: number;
@@ -37,8 +127,8 @@ export default function Index() {
   const [error, setError] = useState<string | null>(null);
   const sliderRef = useRef<HTMLDivElement | null>(null);
   const [paused, setPaused] = useState(false);
-  const [email, setEmail] = useState("");
-  const [subscribed, setSubscribed] = useState(false);
+  const actionData = useActionData<{ success?: string; error?: string }>();
+  const { isAdmin } = useLoaderData<typeof loader>();
 
   useEffect(() => {
     const load = async () => {
@@ -123,7 +213,8 @@ export default function Index() {
             { href: '/shops', title: 'Shops' },
             { href: '/affiliates', title: 'Affiliates' },
             { href: '/other-platforms', title: 'Other platforms' },
-            { href: '/guides', title: 'Guides' },
+            { href: '/contact', title: 'Contact' },
+            { href: '/about', title: 'About' },
           ].map((c) => (
             <a
               key={c.href}
@@ -275,29 +366,54 @@ export default function Index() {
       <section className="bg-white">
         <div className="mx-auto max-w-3xl px-6 pb-12">
           <div className="rounded-2xl border border-black/10 bg-gradient-to-br from-gray-50 to-white p-6 shadow-sm">
-            <h3 className="text-xl font-semibold">Subscribe to our newsletter</h3>
-            <p className="mt-1 text-sm text-gray-600">Get alerts about guides, curated selections, and launches.</p>
-            {subscribed ? (
-              <p className="mt-4 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">Thank you for subscribing!</p>
-            ) : (
-              <form
-                className="mt-4 flex flex-col gap-3 sm:flex-row"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return;
-                  setSubscribed(true);
-                }}
-              >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-semibold">Subscribe to our newsletter</h3>
+                <p className="mt-1 text-sm text-gray-600">Get alerts about guides, curated selections, and launches.</p>
+              </div>
+              {isAdmin && (
+                <a
+                  href="/admin/newsletter"
+                  className="inline-flex items-center gap-2 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent/90 transition-colors shadow-sm"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                  </svg>
+                  Manage
+                </a>
+              )}
+            </div>
+            
+            {actionData?.success && (
+              <div className="mt-4 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
+                {actionData.success}
+              </div>
+            )}
+            
+            {actionData?.error && (
+              <div className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {actionData.error}
+              </div>
+            )}
+            
+            {!actionData?.success && (
+              <Form method="post" className="mt-4 flex flex-col gap-3 sm:flex-row">
+                <input type="hidden" name="action" value="newsletter" />
                 <input
                   type="email"
+                  name="email"
                   placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="flex-1 rounded-md border border-gray-300 px-3 py-2"
+                  className="flex-1 rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent"
                   required
+                  aria-label="Email address"
                 />
-                <button type="submit" className="rounded-md bg-black px-4 py-2 text-white hover:bg-black/90">Subscribe</button>
-              </form>
+                <button 
+                  type="submit" 
+                  className="rounded-md bg-black px-4 py-2 text-white hover:bg-black/90 transition-colors"
+                >
+                  Subscribe
+                </button>
+              </Form>
             )}
           </div>
         </div>
