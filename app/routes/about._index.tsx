@@ -1,7 +1,6 @@
 import type { MetaFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { useState, useEffect } from "react";
 import { ogImage } from "../content/links";
 import { pool } from "../lib/db";
 
@@ -11,18 +10,49 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   try {
     const result = await client.query('SELECT bio, image_url FROM about_content ORDER BY updated_at DESC LIMIT 1');
     
+    let aboutData;
     if (result.rows.length === 0) {
       // Fallback to default content if nothing in database
-      return json({
+      aboutData = {
         bio: "¡Hola! Soy Karina, una apasionada de la moda y el estilo personal. A través de Éclectique by KMC, comparto mis looks favoritos y descubrimientos de moda que pueden inspirarte a crear tu propio estilo único. Me encanta encontrar piezas versátiles que se adapten a diferentes ocasiones y presupuestos.",
         image: "/images/kmc.webp"
-      });
+      };
+    } else {
+      aboutData = {
+        bio: result.rows[0].bio,
+        image: result.rows[0].image_url
+      };
     }
     
-    return json({
-      bio: result.rows[0].bio,
-      image: result.rows[0].image_url
-    });
+    // Check if user is authenticated and is admin
+    let isAdmin = false;
+    try {
+      const authHeader = request.headers.get('Authorization');
+      const cookieHeader = request.headers.get('Cookie');
+
+      const backendUrl = process.env.NODE_ENV === 'production'
+        ? 'http://eclectique-backend:8020'
+        : 'http://localhost:8020';
+
+      const headers: Record<string, string> = { 'Accept': 'application/json' };
+      if (authHeader) headers['Authorization'] = authHeader;
+      if (cookieHeader) headers['Cookie'] = cookieHeader;
+
+      const response = await fetch(`${backendUrl}/api/auth/me`, {
+        method: 'GET',
+        headers,
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        isAdmin = userData?.is_admin === true;
+      }
+    } catch (error) {
+      // If auth fails, isAdmin remains false
+      console.log('Auth check failed:', error);
+    }
+    
+    return json({ ...aboutData, isAdmin });
   } finally {
     client.release();
   }
@@ -37,32 +67,10 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => ([
 ]);
 
 export default function About() {
-  const { bio, image } = useLoaderData<typeof loader>();
-  const [isAdmin, setIsAdmin] = useState(false);
-  
-  useEffect(() => {
-    // Simple admin check
-    const adminAuth = localStorage.getItem('adminAuth') === 'true' || 
-                     localStorage.getItem('eclectique_admin_bypass') === 'true';
-    setIsAdmin(adminAuth);
-  }, []);
+  const { bio, image, isAdmin } = useLoaderData<typeof loader>();
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
-      {isAdmin && (
-        <div className="mb-4 rounded-lg bg-accent/10 border border-accent/20 px-4 py-2 text-sm text-accent flex items-center justify-between">
-          <span><span className="font-medium">Admin Mode Active</span> - Press Ctrl+Shift+A to toggle</span>
-          <button
-            onClick={() => {
-              localStorage.setItem('eclectique_admin_mode', 'false');
-              setIsAdmin(false);
-            }}
-            className="text-xs text-accent hover:text-accent/70 underline"
-          >
-            Disable
-          </button>
-        </div>
-      )}
       
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">About KMC</h1>

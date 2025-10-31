@@ -13,8 +13,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Lint**: `npm run lint` - ESLint with caching
 
 ### Docker Deployment
-- **Build and deploy**: `cd docker-stack && docker compose up -d --build remix-landing-eclectiquebykmc`
+- **Quick deploy**: `npm run build && docker cp build/. remix-landing-eclectiquebykmc:/app/build/ && docker restart remix-landing-eclectiquebykmc`
+- **Full rebuild**: `cd docker-stack && docker compose up -d --build remix-landing-eclectiquebykmc`
 - **View logs**: `docker compose logs -f remix-landing-eclectiquebykmc`
+
+### Documentation for Agents
+- **DEPLOYMENT.md**: Comprehensive guide for deployment, authentication, and admin functionality
+- **QUICK-DEPLOY.md**: Fast deployment commands and troubleshooting
+- **Admin System**: User `contact@eclectiquebykmc.com` has admin privileges in PostgreSQL
 
 ## Architecture Overview
 

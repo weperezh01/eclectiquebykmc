@@ -1,7 +1,6 @@
 import type { MetaFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { useState, useEffect } from "react";
 import { ogImage } from "../content/links";
 import { getGuides } from "../lib/guide-loader";
 import { getGuideThumbnail } from "../utils/thumbnail";
@@ -16,43 +15,47 @@ export const meta: MetaFunction = () => ([
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const guides = await getGuides();
-  return json({ guides });
+  
+  // Check if user is authenticated and is admin
+  let isAdmin = false;
+  try {
+    const authHeader = request.headers.get('Authorization');
+    const cookieHeader = request.headers.get('Cookie');
+
+    const backendUrl = process.env.NODE_ENV === 'production'
+      ? 'http://eclectique-backend:8020'
+      : 'http://localhost:8020';
+
+    const headers: Record<string, string> = { 'Accept': 'application/json' };
+    if (authHeader) headers['Authorization'] = authHeader;
+    if (cookieHeader) headers['Cookie'] = cookieHeader;
+
+    const response = await fetch(`${backendUrl}/api/auth/me`, {
+      method: 'GET',
+      headers,
+    });
+
+    if (response.ok) {
+      const userData = await response.json();
+      isAdmin = userData?.is_admin === true;
+    }
+  } catch (error) {
+    // If auth fails, isAdmin remains false
+    console.log('Auth check failed:', error);
+  }
+  
+  return json({ guides, isAdmin });
 };
 
 export default function Guides() {
-  const { guides } = useLoaderData<typeof loader>();
-  const [isAdmin, setIsAdmin] = useState(false);
-  
-  useEffect(() => {
-    // Simple admin check
-    const adminAuth = localStorage.getItem('adminAuth') === 'true' || 
-                     localStorage.getItem('eclectique_admin_bypass') === 'true';
-    setIsAdmin(adminAuth);
-  }, []);
+  const { guides, isAdmin } = useLoaderData<typeof loader>();
   
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
-      {isAdmin && (
-        <div className="mb-4 rounded-lg bg-accent/10 border border-accent/20 px-4 py-2 text-sm text-accent flex items-center justify-between">
-          <span><span className="font-medium">Admin Mode Active</span> - Press Ctrl+Shift+A to toggle</span>
-          <button
-            onClick={() => {
-              localStorage.setItem('eclectique_admin_mode', 'false');
-              setIsAdmin(false);
-            }}
-            className="text-xs text-accent hover:text-accent/70 underline"
-          >
-            Disable
-          </button>
-        </div>
-      )}
       
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Guides & Looks</h1>
         <div className="flex items-center gap-3">
-          {/* Debug info */}
-          <span className="text-xs text-gray-500">Admin: {isAdmin ? 'YES' : 'NO'}</span>
-          
           {/* Show manage button only if user is authenticated as admin */}
           {isAdmin && (
             <a
