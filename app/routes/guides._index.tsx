@@ -22,54 +22,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 export default function Guides() {
   const { guides } = useLoaderData<typeof loader>();
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   
   useEffect(() => {
-    // Check if user is actually authenticated as admin
-    const checkAdminAuth = async () => {
-      try {
-        // Check if user accessed admin interface recently (indicating admin intent)
-        const hasRecentAdminAccess = sessionStorage.getItem('eclectique_admin_access') === 'true' ||
-                                     localStorage.getItem('eclectique_admin_bypass') === 'true';
-        
-        if (hasRecentAdminAccess) {
-          setIsAdmin(true);
-          setIsCheckingAuth(false);
-          return;
-        }
-
-        const response = await fetch('/api/auth/me', {
-          credentials: 'include',
-          headers: {
-            'Accept': 'application/json',
-          },
-        });
-        
-        if (response.ok) {
-          const userData = await response.json();
-          // Check if user has admin role/permissions or is successfully authenticated
-          const hasAdminAccess = userData?.success !== false && (
-            userData?.role === 'admin' || 
-            userData?.isAdmin === true || 
-            userData?.admin === true ||
-            userData?.user?.role === 'admin' ||
-            userData?.user?.isAdmin === true ||
-            userData?.rol === 'admin'
-          );
-          setIsAdmin(hasAdminAccess);
-        } else {
-          // For now, if user is not authenticated, don't show admin button
-          setIsAdmin(false);
-        }
-      } catch (error) {
-        console.log('Auth check failed:', error);
-        setIsAdmin(false);
-      } finally {
-        setIsCheckingAuth(false);
-      }
-    };
-    
-    checkAdminAuth();
+    // Simple admin check
+    const adminAuth = localStorage.getItem('adminAuth') === 'true' || 
+                     localStorage.getItem('eclectique_admin_bypass') === 'true';
+    setIsAdmin(adminAuth);
   }, []);
   
   return (
@@ -92,7 +50,7 @@ export default function Guides() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Guides & Looks</h1>
         {/* Show manage button only if user is authenticated as admin */}
-        {isAdmin && !isCheckingAuth && (
+        {isAdmin && (
           <a
             href="/admin/guides"
             className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90 transition-colors shadow-sm"
