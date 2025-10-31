@@ -120,10 +120,10 @@ export default function Index() {
         {/* Quick links within hero */}
         <div className="flex flex-wrap gap-3 md:gap-4 items-center">
           {[
-            { href: '/tiendas', title: 'Shops' },
-            { href: '/afiliados', title: 'Affiliates' },
-            { href: '/otras-plataformas', title: 'Other platforms' },
-            { href: '/guias', title: 'Guides' },
+            { href: '/shops', title: 'Shops' },
+            { href: '/affiliates', title: 'Affiliates' },
+            { href: '/other-platforms', title: 'Other platforms' },
+            { href: '/guides', title: 'Guides' },
           ].map((c) => (
             <a
               key={c.href}
@@ -142,8 +142,8 @@ export default function Index() {
           <div className="mb-3 flex items-end justify-between">
             <h2 className="text-xl md:text-2xl font-bold">Explore now</h2>
             <div className="flex items-center gap-4 text-sm">
-              <a href="/tiendas" className="text-gray-700 hover:underline">Shops</a>
-              <a href="/afiliados" className="text-accent hover:underline">Affiliates</a>
+              <a href="/shops" className="text-gray-700 hover:underline">Shops</a>
+              <a href="/affiliates" className="text-accent hover:underline">Affiliates</a>
             </div>
           </div>
           <div className="relative">
@@ -195,7 +195,7 @@ export default function Index() {
         <div className="mx-auto max-w-6xl px-6 py-12">
           <div className="mb-6 flex items-end justify-between">
             <h2 className="text-2xl md:text-3xl font-bold">Featured</h2>
-            <a href="/afiliados" className="text-sm text-accent hover:underline">View more</a>
+            <a href="/affiliates" className="text-sm text-accent hover:underline">View more</a>
           </div>
 
           {loading ? (
@@ -228,8 +228,8 @@ export default function Index() {
           <div className="mb-6 flex items-end justify-between">
             <h2 className="text-2xl md:text-3xl font-bold">New arrivals</h2>
             <div className="flex items-center gap-4">
-              <a href="/tiendas" className="text-sm text-gray-700 hover:underline">Shops</a>
-              <a href="/afiliados" className="text-sm text-accent hover:underline">Affiliates</a>
+              <a href="/shops" className="text-sm text-gray-700 hover:underline">Shops</a>
+              <a href="/affiliates" className="text-sm text-accent hover:underline">Affiliates</a>
             </div>
           </div>
           {loading ? (

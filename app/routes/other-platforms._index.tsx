@@ -2,24 +2,24 @@ import type { MetaFunction } from "@remix-run/node";
 import { content, ogImage } from "../content/links";
 
 export const meta: MetaFunction = () => ([
-  { title: "Otras plataformas | Éclectique by KMC" },
-  { name: "description", content: "Encuéntranos también en Instagram." },
-  { property: "og:title", content: "Otras plataformas — Éclectique by KMC" },
-  { property: "og:description", content: "Instagram" },
+  { title: "Other platforms | Éclectique by KMC" },
+  { name: "description", content: "Find us also on Instagram and Pinterest." },
+  { property: "og:title", content: "Other platforms — Éclectique by KMC" },
+  { property: "og:description", content: "Instagram and Pinterest" },
   { property: "og:image", content: ogImage },
 ]);
 
-export default function OtrasPlataformas() {
+export default function OtherPlatforms() {
   const instagram = content.social.instagram;
   const pinterest = content.social.pinterest;
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
-      <h1 className="text-3xl font-bold">Otras plataformas</h1>
-      <p className="mt-2 max-w-3xl text-gray-600">Contenido adicional y contacto en redes sociales.</p>
+      <h1 className="text-3xl font-bold">Other platforms</h1>
+      <p className="mt-2 max-w-3xl text-gray-600">Additional content and social media contact.</p>
       <section className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         {[
-          { name: 'Instagram', href: instagram, logo: '/images/logos/instagram.svg', blurb: 'Outfits y novedades.' },
-          { name: 'Pinterest', href: pinterest, logo: '/images/logos/pinterest.svg', blurb: 'Moodboards e ideas.' },
+          { name: 'Instagram', href: instagram, logo: '/images/logos/instagram.svg', blurb: 'Outfits and updates.' },
+          { name: 'Pinterest', href: pinterest, logo: '/images/logos/pinterest.svg', blurb: 'Moodboards and ideas.' },
         ].map((m) => (
           <a
             key={m.name}

@@ -5,8 +5,8 @@ import Card from "../components/Card";
 import { content } from "../content/links";
 
 export const meta: MetaFunction = () => ([
-  { title: "Tiendas | Éclectique by KMC" },
-  { name: "description", content: "Publicaciones individuales de Poshmark, Mercari, eBay y TikTok Showcase." },
+  { title: "Shops | Éclectique by KMC" },
+  { name: "description", content: "Individual listings from Poshmark, Mercari, eBay and TikTok Showcase." },
 ]);
 
 type Producto = {
@@ -52,7 +52,7 @@ export default function TiendasIndex() {
       const filtered = (data as any[]).filter(p => (p.tipo === 'afiliado') && (p.marketplace && allow.has(String(p.marketplace))));
       setItems(filtered);
     } catch (e: any) {
-      setError(e?.message || 'Error cargando productos');
+      setError(e?.message || 'Error loading products');
     } finally {
       setLoading(false);
     }
@@ -98,11 +98,11 @@ export default function TiendasIndex() {
         try { const j = JSON.parse(msg); msg = j.message || msg; } catch {}
         throw new Error(msg || `Error ${res.status}`);
       }
-      setSavedMsg('Producto agregado');
+      setSavedMsg('Product added');
       setForm({ titulo: "", descripcion: "", enlace_url: "", imagen_url: "", marketplace: "Poshmark", precio: "", moneda: "USD", destacado: false });
       await load();
     } catch (e: any) {
-      setError(e?.message || 'No se pudo guardar');
+      setError(e?.message || 'Could not save');
     } finally {
       setSaving(false);
       setTimeout(() => setSavedMsg(null), 2500);
@@ -111,8 +111,8 @@ export default function TiendasIndex() {
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
-      <h1 className="text-3xl font-bold">Tiendas</h1>
-      <p className="mt-2 text-gray-600">Publicaciones individuales de Poshmark, Mercari, eBay y TikTok Showcase.</p>
+      <h1 className="text-3xl font-bold">Shops</h1>
+      <p className="mt-2 text-gray-600">Individual listings from Poshmark, Mercari, eBay and TikTok Showcase.</p>
 
       {/* Enlaces superiores a plataformas */}
       <section className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -136,10 +136,10 @@ export default function TiendasIndex() {
 
       {isAdmin ? (
         <section className="mt-6 rounded-lg border border-black/10 bg-white p-4 shadow-sm">
-          <h2 className="text-lg font-semibold">Agregar publicación</h2>
+          <h2 className="text-lg font-semibold">Add listing</h2>
           <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm text-gray-700 mb-1">Título</label>
+              <label className="block text-sm text-gray-700 mb-1">Title</label>
               <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} />
             </div>
             <div>
@@ -152,34 +152,34 @@ export default function TiendasIndex() {
               </select>
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm text-gray-700 mb-1">Descripción</label>
+              <label className="block text-sm text-gray-700 mb-1">Description</label>
               <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={form.descripcion} onChange={(e) => setForm({ ...form, descripcion: e.target.value })} />
             </div>
             <div>
-              <label className="block text-sm text-gray-700 mb-1">Enlace</label>
+              <label className="block text-sm text-gray-700 mb-1">Link</label>
               <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={form.enlace_url} onChange={(e) => setForm({ ...form, enlace_url: e.target.value })} placeholder="https://..." />
             </div>
             <div>
-              <label className="block text-sm text-gray-700 mb-1">Imagen (URL)</label>
-              <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={form.imagen_url} onChange={(e) => setForm({ ...form, imagen_url: e.target.value })} placeholder="https://.../imagen.jpg" />
+              <label className="block text-sm text-gray-700 mb-1">Image (URL)</label>
+              <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={form.imagen_url} onChange={(e) => setForm({ ...form, imagen_url: e.target.value })} placeholder="https://.../image.jpg" />
             </div>
             <div className="flex gap-3">
               <div className="flex-1">
-                <label className="block text-sm text-gray-700 mb-1">Precio</label>
-                <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={form.precio} onChange={(e) => setForm({ ...form, precio: e.target.value })} placeholder="Opcional" />
+                <label className="block text-sm text-gray-700 mb-1">Price</label>
+                <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={form.precio} onChange={(e) => setForm({ ...form, precio: e.target.value })} placeholder="Optional" />
               </div>
               <div className="w-32">
-                <label className="block text-sm text-gray-700 mb-1">Moneda</label>
+                <label className="block text-sm text-gray-700 mb-1">Currency</label>
                 <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={form.moneda} onChange={(e) => setForm({ ...form, moneda: e.target.value })} placeholder="USD" />
               </div>
             </div>
             <label className="flex items-center gap-2 text-sm text-gray-700">
               <input type="checkbox" checked={form.destacado} onChange={(e) => setForm({ ...form, destacado: e.target.checked })} />
-              Destacado
+              Featured
             </label>
           </div>
           <div className="mt-3 flex items-center gap-3">
-            <button onClick={submit} disabled={saving || !form.titulo.trim()} className="rounded-md bg-black px-4 py-2 text-white disabled:opacity-60">{saving ? 'Guardando...' : 'Agregar'}</button>
+            <button onClick={submit} disabled={saving || !form.titulo.trim()} className="rounded-md bg-black px-4 py-2 text-white disabled:opacity-60">{saving ? 'Saving...' : 'Add'}</button>
             {savedMsg ? <span className="text-sm text-green-700">{savedMsg}</span> : null}
             {error ? <span className="text-sm text-red-700">{error}</span> : null}
           </div>
@@ -188,11 +188,11 @@ export default function TiendasIndex() {
 
       <section className="mt-8">
         {loading ? (
-          <p className="text-sm text-gray-600">Cargando...</p>
+          <p className="text-sm text-gray-600">Loading...</p>
         ) : error ? (
           <p className="text-sm text-red-700">{error}</p>
         ) : items.length === 0 ? (
-          <p className="text-sm text-gray-600">No hay productos publicados por ahora.</p>
+          <p className="text-sm text-gray-600">No products listed yet.</p>
         ) : (
           <Grid>
             {items.map((p) => (
@@ -202,7 +202,7 @@ export default function TiendasIndex() {
                 image={p.imagen_url || "/images/aff/organizer.webp"}
                 href={p.enlace_url || '#'}
                 note={p.precio ? `${p.precio} ${p.moneda || ''}` : p.descripcion || undefined}
-                label={p.marketplace ? `Ver en ${p.marketplace}` : 'Ver'}
+                label={p.marketplace ? `View on ${p.marketplace}` : 'View'}
               />
             ))}
           </Grid>

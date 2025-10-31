@@ -6,13 +6,13 @@ import Disclosure from "../components/Disclosure";
 import { HOME_COPY, ogImage, content } from "../content/links";
 
 export const meta: MetaFunction = () => ([
-  { title: "Afiliados | Éclectique by KMC" },
+  { title: "Affiliates | Éclectique by KMC" },
   {
     name: "description",
     content:
-      "Recomendaciones con enlaces de afiliado a productos de plataformas como Amazon, LTK, Walmart, entre otras.",
+      "Affiliate recommendations and links to products from platforms like Amazon, LTK, Walmart, and others.",
   },
-  { property: "og:title", content: "Afiliados — Éclectique by KMC" },
+  { property: "og:title", content: "Affiliates — Éclectique by KMC" },
   { property: "og:description", content: HOME_COPY.disclosure },
   { property: "og:image", content: ogImage },
 ]);
@@ -76,7 +76,7 @@ export default function Affiliates() {
       const filtered = data.filter(p => (p.tipo === 'afiliado') && (p.marketplace && allow.has(String(p.marketplace))));
       setItems(filtered);
     } catch (e: any) {
-      setError(e?.message || 'Error cargando productos');
+      setError(e?.message || 'Error loading products');
     } finally {
       setLoading(false);
     }
@@ -122,11 +122,11 @@ export default function Affiliates() {
         try { const j = JSON.parse(msg); msg = j.message || msg; } catch {}
         throw new Error(msg || `Error ${res.status}`);
       }
-      setSavedMsg('Producto agregado');
+      setSavedMsg('Product added');
       setForm({ titulo: "", descripcion: "", tipo: 'afiliado', marketplace: "Amazon", enlace_url: "", imagen_url: "", precio: "", moneda: "USD", destacado: false });
       await load();
     } catch (e: any) {
-      setError(e?.message || 'No se pudo guardar');
+      setError(e?.message || 'Could not save');
     } finally {
       setSaving(false);
       setTimeout(() => setSavedMsg(null), 2500);
@@ -135,12 +135,12 @@ export default function Affiliates() {
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
-      <h1 className="text-3xl font-bold">Afiliados</h1>
+      <h1 className="text-3xl font-bold">Affiliates</h1>
       <div className="mt-3">
         <Disclosure text={HOME_COPY.disclosure} />
       </div>
 
-      {/* Enlaces superiores a storefronts de afiliados */}
+      {/* Links to affiliate storefronts */}
       <section className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {content.affiliatesShops.map((s) => (
           <a
@@ -162,21 +162,21 @@ export default function Affiliates() {
 
       {isAdmin ? (
         <section className="mt-6 rounded-lg border border-black/10 bg-white p-4 shadow-sm">
-          <h2 className="text-lg font-semibold">Agregar producto</h2>
+          <h2 className="text-lg font-semibold">Add product</h2>
           <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm text-gray-700 mb-1">Título</label>
+              <label className="block text-sm text-gray-700 mb-1">Title</label>
               <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} />
             </div>
             <div>
-              <label className="block text-sm text-gray-700 mb-1">Tipo</label>
+              <label className="block text-sm text-gray-700 mb-1">Type</label>
               <select className="w-full rounded-md border border-gray-300 px-3 py-2" value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value as any })}>
-                <option value="afiliado">Afiliado</option>
-                <option value="propio">Propio</option>
+                <option value="afiliado">Affiliate</option>
+                <option value="propio">Own</option>
               </select>
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm text-gray-700 mb-1">Descripción</label>
+              <label className="block text-sm text-gray-700 mb-1">Description</label>
               <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={form.descripcion} onChange={(e) => setForm({ ...form, descripcion: e.target.value })} />
             </div>
             <div>
@@ -188,34 +188,34 @@ export default function Affiliates() {
                 <option>Shein</option>
                 <option>DH Gate</option>
                 <option>AliExpress</option>
-                <option>Otro</option>
+                <option>Other</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm text-gray-700 mb-1">Enlace</label>
+              <label className="block text-sm text-gray-700 mb-1">Link</label>
               <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={form.enlace_url} onChange={(e) => setForm({ ...form, enlace_url: e.target.value })} placeholder="https://..." />
             </div>
             <div>
-              <label className="block text-sm text-gray-700 mb-1">Imagen (URL)</label>
-              <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={form.imagen_url} onChange={(e) => setForm({ ...form, imagen_url: e.target.value })} placeholder="https://.../imagen.jpg" />
+              <label className="block text-sm text-gray-700 mb-1">Image (URL)</label>
+              <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={form.imagen_url} onChange={(e) => setForm({ ...form, imagen_url: e.target.value })} placeholder="https://.../image.jpg" />
             </div>
             <div className="flex gap-3">
               <div className="flex-1">
-                <label className="block text-sm text-gray-700 mb-1">Precio</label>
-                <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={form.precio} onChange={(e) => setForm({ ...form, precio: e.target.value })} placeholder="Opcional" />
+                <label className="block text-sm text-gray-700 mb-1">Price</label>
+                <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={form.precio} onChange={(e) => setForm({ ...form, precio: e.target.value })} placeholder="Optional" />
               </div>
               <div className="w-32">
-                <label className="block text-sm text-gray-700 mb-1">Moneda</label>
+                <label className="block text-sm text-gray-700 mb-1">Currency</label>
                 <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={form.moneda} onChange={(e) => setForm({ ...form, moneda: e.target.value })} placeholder="USD" />
               </div>
             </div>
             <label className="flex items-center gap-2 text-sm text-gray-700">
               <input type="checkbox" checked={form.destacado} onChange={(e) => setForm({ ...form, destacado: e.target.checked })} />
-              Destacado
+              Featured
             </label>
           </div>
           <div className="mt-3 flex items-center gap-3">
-            <button onClick={submit} disabled={saving || !form.titulo.trim()} className="rounded-md bg-black px-4 py-2 text-white disabled:opacity-60">{saving ? 'Guardando...' : 'Agregar'}</button>
+            <button onClick={submit} disabled={saving || !form.titulo.trim()} className="rounded-md bg-black px-4 py-2 text-white disabled:opacity-60">{saving ? 'Saving...' : 'Add'}</button>
             {savedMsg ? <span className="text-sm text-green-700">{savedMsg}</span> : null}
             {error ? <span className="text-sm text-red-700">{error}</span> : null}
           </div>
@@ -224,7 +224,7 @@ export default function Affiliates() {
 
       <section className="mt-8">
         {loading ? (
-          <p className="text-sm text-gray-600">Cargando...</p>
+          <p className="text-sm text-gray-600">Loading...</p>
         ) : error ? (
           <p className="text-sm text-red-700">{error}</p>
         ) : (
@@ -251,22 +251,22 @@ export default function Affiliates() {
                         });
                       }}
                     >
-                      Editar
+                      Edit
                     </button>
                     <button
                       className="rounded bg-red-600 px-2 py-1 text-xs text-white hover:bg-red-700"
                       onClick={async () => {
-                        if (!confirm('¿Eliminar este producto?')) return;
+                        if (!confirm('Delete this product?')) return;
                         try {
                           const res = await fetch(`/api/products/${p.id}`, { method: 'DELETE', credentials: 'include' });
-                          if (!res.ok) throw new Error('No se pudo eliminar');
+                          if (!res.ok) throw new Error('Could not delete');
                           await load();
                         } catch (e) {
-                          alert('Error eliminando');
+                          alert('Error deleting');
                         }
                       }}
                     >
-                      Eliminar
+                      Delete
                     </button>
                   </div>
                 ) : null}
@@ -275,7 +275,7 @@ export default function Affiliates() {
                   image={p.imagen_url || "/images/aff/organizer.webp"}
                   href={p.enlace_url || '#'}
                   note={p.descripcion || undefined}
-                  label={p.marketplace ? `Ver en ${p.marketplace}` : 'Ver'}
+                  label={p.marketplace ? `View on ${p.marketplace}` : 'View'}
                 />
               </div>
             ))}
@@ -283,28 +283,28 @@ export default function Affiliates() {
         )}
       </section>
 
-      {/* Modal de edición */}
+      {/* Edit modal */}
       {isAdmin && editId !== null ? (
         <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
           <div className="w-full max-w-2xl rounded-lg bg-white p-4 shadow-xl">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Editar producto</h3>
-              <button onClick={() => setEditId(null)} className="rounded border border-gray-300 px-2 py-1 text-sm">Cerrar</button>
+              <h3 className="text-lg font-semibold">Edit product</h3>
+              <button onClick={() => setEditId(null)} className="rounded border border-gray-300 px-2 py-1 text-sm">Close</button>
             </div>
             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm text-gray-700 mb-1">Título</label>
+                <label className="block text-sm text-gray-700 mb-1">Title</label>
                 <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={editForm.titulo} onChange={(e) => setEditForm({ ...editForm, titulo: e.target.value })} />
               </div>
               <div>
-                <label className="block text-sm text-gray-700 mb-1">Tipo</label>
+                <label className="block text-sm text-gray-700 mb-1">Type</label>
                 <select className="w-full rounded-md border border-gray-300 px-3 py-2" value={editForm.tipo} onChange={(e) => setEditForm({ ...editForm, tipo: e.target.value as any })}>
-                  <option value="afiliado">Afiliado</option>
-                  <option value="propio">Propio</option>
+                  <option value="afiliado">Affiliate</option>
+                  <option value="propio">Own</option>
                 </select>
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm text-gray-700 mb-1">Descripción</label>
+                <label className="block text-sm text-gray-700 mb-1">Description</label>
                 <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={editForm.descripcion} onChange={(e) => setEditForm({ ...editForm, descripcion: e.target.value })} />
               </div>
               <div>
@@ -316,30 +316,30 @@ export default function Affiliates() {
                   <option>TikTok</option>
                   <option>Pinterest</option>
                   <option>Instagram</option>
-                  <option>Otro</option>
+                  <option>Other</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm text-gray-700 mb-1">Enlace</label>
+                <label className="block text-sm text-gray-700 mb-1">Link</label>
                 <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={editForm.enlace_url} onChange={(e) => setEditForm({ ...editForm, enlace_url: e.target.value })} placeholder="https://..." />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm text-gray-700 mb-1">Imagen (URL)</label>
-                <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={editForm.imagen_url} onChange={(e) => setEditForm({ ...editForm, imagen_url: e.target.value })} placeholder="https://.../imagen.jpg" />
+                <label className="block text-sm text-gray-700 mb-1">Image (URL)</label>
+                <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={editForm.imagen_url} onChange={(e) => setEditForm({ ...editForm, imagen_url: e.target.value })} placeholder="https://.../image.jpg" />
               </div>
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="block text-sm text-gray-700 mb-1">Precio</label>
-                  <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={editForm.precio} onChange={(e) => setEditForm({ ...editForm, precio: e.target.value })} placeholder="Opcional" />
+                  <label className="block text-sm text-gray-700 mb-1">Price</label>
+                  <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={editForm.precio} onChange={(e) => setEditForm({ ...editForm, precio: e.target.value })} placeholder="Optional" />
                 </div>
                 <div className="w-32">
-                  <label className="block text-sm text-gray-700 mb-1">Moneda</label>
+                  <label className="block text-sm text-gray-700 mb-1">Currency</label>
                   <input className="w-full rounded-md border border-gray-300 px-3 py-2" value={editForm.moneda} onChange={(e) => setEditForm({ ...editForm, moneda: e.target.value })} placeholder="USD" />
                 </div>
               </div>
               <label className="flex items-center gap-2 text-sm text-gray-700">
                 <input type="checkbox" checked={editForm.destacado} onChange={(e) => setEditForm({ ...editForm, destacado: e.target.checked })} />
-                Destacado
+                Featured
               </label>
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -347,7 +347,7 @@ export default function Affiliates() {
                 onClick={async () => {
                   try {
                     const payload: any = { ...editForm };
-                    if (!payload.titulo) throw new Error('Título requerido');
+                    if (!payload.titulo) throw new Error('Title required');
                     if (!payload.enlace_url) delete payload.enlace_url;
                     if (!payload.imagen_url) delete payload.imagen_url;
                     if (!payload.descripcion) delete payload.descripcion;
@@ -358,19 +358,19 @@ export default function Affiliates() {
                       credentials: 'include',
                       body: JSON.stringify(payload),
                     });
-                    if (!res.ok) throw new Error('No se pudo actualizar');
+                    if (!res.ok) throw new Error('Could not update');
                     await load();
                     setEditId(null);
                   } catch (e: any) {
-                    alert(e?.message || 'Error guardando cambios');
+                    alert(e?.message || 'Error saving changes');
                   }
                 }}
                 className="rounded-md bg-black px-4 py-2 text-white"
               >
-                Guardar cambios
+                Save changes
               </button>
               <label className="inline-flex items-center gap-2 text-sm">
-                <span>Imagen (archivo):</span>
+                <span>Image (file):</span>
                 <input type="file" accept="image/*" onChange={async (e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
@@ -379,16 +379,16 @@ export default function Affiliates() {
                     const fd = new FormData();
                     fd.append('file', file);
                     const res = await fetch(`/api/products/${editId}/image`, { method: 'POST', body: fd, credentials: 'include' });
-                    if (!res.ok) throw new Error('No se pudo subir imagen');
+                    if (!res.ok) throw new Error('Could not upload image');
                     await load();
                   } catch (err: any) {
-                    alert(err?.message || 'Error subiendo imagen');
+                    alert(err?.message || 'Error uploading image');
                   } finally {
                     setUploadingImg(false);
                   }
                 }} />
               </label>
-              {uploadingImg ? <span className="text-sm text-gray-600">Subiendo...</span> : null}
+              {uploadingImg ? <span className="text-sm text-gray-600">Uploading...</span> : null}
             </div>
           </div>
         </div>

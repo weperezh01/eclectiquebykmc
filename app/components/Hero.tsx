@@ -26,7 +26,7 @@ export default function Hero({
           {parts.length === 2 ? (
             <>
               <span className="block text-6xl sm:text-8xl md:text-9xl">{parts[0]}</span>
-              <span className="block text-3xl sm:text-4xl md:text-5xl opacity-90">by {parts[1]}</span>
+              <span className="block text-3xl sm:text-4xl md:text-5xl opacity-90 text-accent">by KMC</span>
             </>
           ) : (
             <span className="text-3xl sm:text-4xl md:text-6xl">{title}</span>

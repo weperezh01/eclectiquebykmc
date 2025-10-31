@@ -25,7 +25,18 @@ export default function MarketplaceIcon({
   }
   
   if (marketplaceLower.includes('walmart')) {
-    return <SiWalmart size={size} className={className} />;
+    return (
+      <img 
+        src="/images/logos/Walmart-Logo-Icon.png" 
+        alt="Walmart" 
+        width={size} 
+        height={size} 
+        className={`${className} object-cover rounded-full`}
+        style={{ 
+          transform: 'scale(1.3)'
+        }}
+      />
+    );
   }
   
   if (marketplaceLower.includes('mercari')) {
@@ -37,7 +48,34 @@ export default function MarketplaceIcon({
   }
   
   if (marketplaceLower.includes('ltk')) {
-    return <FaLink size={size} className={className} />;
+    return (
+      <img 
+        src="/images/logos/LTK-logo.png" 
+        alt="LTK" 
+        width={size} 
+        height={size} 
+        className={`${className} object-cover rounded-full`}
+        style={{ 
+          filter: 'invert(1)',
+          transform: 'scale(1.3)'
+        }}
+      />
+    );
+  }
+  
+  if (marketplaceLower.includes('shein')) {
+    return (
+      <img 
+        src="/images/logos/shein-logo-rounded-shein-logo-free-png.webp" 
+        alt="Shein" 
+        width={size} 
+        height={size} 
+        className={`${className} object-cover rounded-full`}
+        style={{ 
+          transform: 'scale(1.3)'
+        }}
+      />
+    );
   }
   
   if (marketplaceLower.includes('facebook')) {

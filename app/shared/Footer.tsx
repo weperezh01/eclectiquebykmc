@@ -91,7 +91,7 @@ export default function Footer() {
               className="p-2 rounded-full bg-black hover:bg-gray-800 text-white transition"
               title="LTK"
             >
-              <FaLink size={18} />
+              <MarketplaceIcon marketplace="LTK" size={18} />
             </a>
           )}
           {LINKS.tiktok_showcase && (
@@ -115,7 +115,7 @@ export default function Footer() {
               className="p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white transition"
               title="Walmart"
             >
-              <SiWalmart size={18} />
+              <MarketplaceIcon marketplace="Walmart" size={18} />
             </a>
           )}
           {LINKS.pinterest && (

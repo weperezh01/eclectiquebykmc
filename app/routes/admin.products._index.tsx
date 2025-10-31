@@ -258,7 +258,7 @@ export default function AdminProductsPage() {
           <p className="mt-1 text-sm text-gray-600">Gestiona productos propios y de afiliado.</p>
         </div>
         <div className="flex items-center gap-2">
-          <Link to="/afiliados" className="rounded-md border border-gray-300 px-3 py-2 text-sm hover:bg-black/5">Ver en Afiliados</Link>
+          <Link to="/affiliates" className="rounded-md border border-gray-300 px-3 py-2 text-sm hover:bg-black/5">View Affiliates</Link>
           <button onClick={() => setOpenAdd(true)} className="rounded-md bg-black px-3 py-2 text-sm text-white">Nuevo producto</button>
         </div>
       </div>

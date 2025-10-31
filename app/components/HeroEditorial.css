@@ -1,0 +1,128 @@
+/* Editorial clean Hero styles */
+:root{
+  --color-bg: #0e0e0e;
+  --color-text: #ffffff;
+  --color-primary: #c7a06f;           /* adjust to site gold if different */
+  --color-border: rgba(255,255,255,.22);
+}
+
+.hero { 
+  background: var(--color-bg); 
+  padding: 36px 20px 18px; 
+  color: var(--color-text);
+  margin: 0 auto;
+  max-width: 1200px;
+}
+
+.hero__inner{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.hero__brand{
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+}
+
+.hero__content{
+  max-width: 820px;
+}
+
+.hero__title { 
+  font-weight: 800; 
+  letter-spacing: -.015em;
+  font-size: clamp(24px, 3.6vw, 44px);
+  margin: 0;
+}
+
+.hero__subtitle { 
+  margin: 8px 0 14px;
+  font-size: clamp(14px, 1.8vw, 18px);
+  opacity: .92; 
+}
+
+.hero__microdisclosure { 
+  opacity: .65; 
+  font-size: 12px; 
+  margin-top: 10px; 
+}
+
+/* Shortcuts */
+.hero-shortcuts{ 
+  display: flex; 
+  flex-wrap: wrap; 
+  gap: 10px; 
+  margin-top: 14px; 
+}
+
+.btn{
+  display: inline-flex; 
+  align-items: center; 
+  justify-content: center;
+  padding: 10px 16px; 
+  border-radius: 10px; 
+  font-weight: 600; 
+  line-height: 1;
+  text-decoration: none; 
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  background: transparent; 
+  box-shadow: none;
+  transition: background-color .15s ease, border-color .15s ease, transform .08s ease;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.btn:focus{ 
+  outline: 2px solid #fff; 
+  outline-offset: 2px; 
+}
+
+.btn:active{ 
+  transform: translateY(1px); 
+}
+
+.btn--primary{
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #121212;
+}
+
+.btn--primary:hover{ 
+  filter: brightness(.97); 
+}
+
+.btn--ghost:hover{
+  border-color: rgba(255,255,255,.38);
+  background: rgba(255,255,255,.05);
+}
+
+/* Optional small-screen tweak */
+@media (max-width: 480px){
+  .btn{ 
+    padding: 9px 14px; 
+    border-radius: 10px; 
+  }
+}
+
+@media (min-width: 768px){
+  .hero__inner{
+    grid-template-columns: auto 1fr;
+    gap: 28px;
+  }
+  
+  .hero__brand{
+    justify-content: flex-start;
+    padding-top: 6px;
+  }
+}
+
+/* If previous styles exist, ensure these win */
+.hero .btn{ 
+  box-shadow: none !important; 
+}
+
+/* END Editorial clean */

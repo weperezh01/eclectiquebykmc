@@ -3,13 +3,13 @@ import { useEffect, useRef, useState } from "react";
 
 const baseNav = [
   { to: "/", label: "Home" },
-  { to: "/tiendas", label: "Shops" },
-  { to: "/afiliados", label: "Affiliates" },
+  { to: "/shops", label: "Shops" },
+  { to: "/affiliates", label: "Affiliates" },
   // { to: "/marketplaces", label: "Marketplaces" }, // ocultado a solicitud
-  { to: "/otras-plataformas", label: "Other platforms" },
-  { to: "/guias", label: "Guides" },
-  { to: "/sobre", label: "About" },
-  { to: "/contacto", label: "Contact" },
+  { to: "/other-platforms", label: "Other platforms" },
+  { to: "/guides", label: "Guides" },
+  { to: "/about", label: "About" },
+  { to: "/contact", label: "Contact" },
 ];
 
 export default function Navbar() {

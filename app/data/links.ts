@@ -5,7 +5,7 @@ export const LINKS = {
   poshmark: "https://posh.mk/iwUyAEBwVWb",
   amazon_storefront: "https://www.amazon.com/shop/karina.m.cruzugccreator?ref_=cm_sw_r_apin_aipsfshop_04BNEZ870FWHB6CR9892&language=en-US",
   ltk: "https://www.shopltk.com/explore/Karina_M_Cruz?tab=posts",
-  tiktok_showcase: "https://www.tiktok.com/t/ZPHW2pfYNNRuV-codEb/",
+  tiktok_showcase: "https://www.tiktok.com/t/ZPHvE4qgFWk9W-F3rQq/",
   walmart: "https://walmrt.us/4lDfSFR",
   pinterest: "https://pin.it/2Cu9s1rgv",
 };
