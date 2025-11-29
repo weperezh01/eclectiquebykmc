@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Grid from "../components/Grid";
 import Card from "../components/Card";
 import Disclosure from "../components/Disclosure";
+import ProductImageManager from "../components/ProductImageManager";
 import { HOME_COPY, ogImage, content } from "../content/links";
 import { SiWalmart } from "react-icons/si";
 import MarketplaceIcon from "../components/MarketplaceIcon";
@@ -142,7 +143,7 @@ export default function Affiliates() {
   });
   const [uploadingImg, setUploadingImg] = useState(false);
 
-  const load = async () => {
+  const load = async (adminStatus: boolean = isAdmin) => {
     setLoading(true);
     setError(null);
     try {
@@ -150,7 +151,11 @@ export default function Affiliates() {
       if (!res.ok) throw new Error(`Error ${res.status}`);
       const data = (await res.json()) as any[];
       const allow = new Set(['Amazon','Walmart','LTK','Shein','DH Gate','AliExpress']);
-      const filtered = data.filter(p => (p.tipo === 'afiliado') && (p.marketplace && allow.has(String(p.marketplace))));
+      // For admin users, show all products (including 'propio') to allow management
+      // For regular users, show only affiliate products from allowed marketplaces
+      const filtered = adminStatus 
+        ? data.filter(p => (p.tipo === 'afiliado' && p.marketplace && allow.has(String(p.marketplace))) || p.tipo === 'propio')
+        : data.filter(p => (p.tipo === 'afiliado') && (p.marketplace && allow.has(String(p.marketplace))));
       setItems(filtered);
     } catch (e: any) {
       setError(e?.message || 'Error loading products');
@@ -165,11 +170,19 @@ export default function Affiliates() {
       .then(async (r) => {
         if (r.ok) {
           const me = await r.json();
-          setIsAdmin(me?.rol === 'admin');
+          const isAdminUser = me?.rol === 'admin';
+          setIsAdmin(isAdminUser);
+          // Load products with correct admin status
+          load(isAdminUser);
+        } else {
+          // Not admin, load as regular user
+          load(false);
         }
       })
-      .catch(() => {});
-    load();
+      .catch(() => {
+        // Error checking auth, load as regular user
+        load(false);
+      });
   }, []);
 
   const submit = async () => {
@@ -361,13 +374,98 @@ export default function Affiliates() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Image URL</label>
-                <input 
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200" 
-                  value={form.imagen_url} 
-                  onChange={(e) => setForm({ ...form, imagen_url: e.target.value })} 
-                  placeholder="https://example.com/image.jpg" 
-                />
+                <label className="block text-sm font-semibold text-gray-700 mb-3">Product Image</label>
+                
+                {/* Upload File Option */}
+                <div className="border border-gray-200 rounded-xl p-4 mb-4 bg-gray-50/50">
+                  <h6 className="text-sm font-medium mb-2 text-gray-700">Upload from Device</h6>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        
+                        console.log('Product file selected:', file.name, file.size, file.type);
+                        setError(null);
+                        
+                        // Show loading state
+                        setError('Uploading...');
+                        
+                        const formData = new FormData();
+                        formData.append('image', file);
+                        
+                        try {
+                          console.log('Making upload request...');
+                          const response = await fetch('/admin/upload', {
+                            method: 'POST',
+                            body: formData
+                          });
+                          
+                          console.log('Response status:', response.status);
+                          
+                          if (!response.ok) {
+                            const errorText = await response.text();
+                            console.log('Error response:', errorText);
+                            throw new Error(`Server error: ${response.status}`);
+                          }
+                          
+                          const result = await response.json();
+                          console.log('Upload result:', result);
+                          console.log('Setting product image to:', result.url);
+                          setForm({ ...form, imagen_url: result.url });
+                          setError('Upload successful!');
+                          setTimeout(() => setError(null), 2000);
+                        } catch (error: any) {
+                          console.error('Upload error:', error);
+                          setError(`Upload failed: ${error.message}`);
+                        }
+                      }}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-white hover:file:bg-accent/80 transition-all duration-200"
+                    />
+                    <span className="text-xs text-gray-500 whitespace-nowrap">Max 10MB (JPEG, PNG, WebP)</span>
+                  </div>
+                </div>
+
+                {/* URL Option */}
+                <div className="border border-gray-200 rounded-xl p-4 bg-white">
+                  <h6 className="text-sm font-medium mb-2 text-gray-700">Or Enter Image URL</h6>
+                  <input 
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200" 
+                    type="url"
+                    value={form.imagen_url} 
+                    onChange={(e) => setForm({ ...form, imagen_url: e.target.value })} 
+                    placeholder="https://example.com/image.jpg or /images/uploads/image.jpg" 
+                  />
+                </div>
+
+                {/* Preview */}
+                {form.imagen_url && (
+                  <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <p className="text-xs text-gray-600 mb-2">Preview: {form.imagen_url}</p>
+                    <div className="flex items-center gap-3">
+                      <img 
+                        src={form.imagen_url} 
+                        alt="Product preview" 
+                        className="w-16 h-16 object-cover rounded-lg border"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900 truncate">{form.imagen_url}</p>
+                        <button
+                          type="button"
+                          onClick={() => setForm({ ...form, imagen_url: '' })}
+                          className="text-xs text-red-600 hover:text-red-800 mt-1 font-medium transition-colors duration-200"
+                        >
+                          Remove image
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="flex gap-4">
                 <div className="flex-1">
@@ -537,6 +635,8 @@ export default function Affiliates() {
                       href={p.enlace_url || '#'}
                       note={p.descripcion || undefined}
                       label={p.marketplace ? `Shop on ${p.marketplace}` : 'View Product'}
+                      productType={p.tipo}
+                      productId={p.id}
                     />
                     {/* Hover effect overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-accent/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl pointer-events-none"></div>
@@ -628,13 +728,104 @@ export default function Affiliates() {
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Image URL</label>
-                <input 
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200" 
-                  value={editForm.imagen_url} 
-                  onChange={(e) => setEditForm({ ...editForm, imagen_url: e.target.value })} 
-                  placeholder="https://example.com/image.jpg" 
-                />
+                <label className="block text-sm font-semibold text-gray-700 mb-3">Product Image</label>
+                
+                {/* Upload File Option */}
+                <div className="border border-gray-200 rounded-xl p-4 mb-4 bg-gray-50/50">
+                  <h6 className="text-sm font-medium mb-2 text-gray-700">Upload from Device</h6>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        
+                        console.log('Edit product file selected:', file.name, file.size, file.type);
+                        setUploadingImg(true);
+                        
+                        const formData = new FormData();
+                        formData.append('image', file);
+                        
+                        try {
+                          console.log('Making upload request...');
+                          const response = await fetch('/admin/upload', {
+                            method: 'POST',
+                            body: formData
+                          });
+                          
+                          console.log('Response status:', response.status);
+                          
+                          if (!response.ok) {
+                            const errorText = await response.text();
+                            console.log('Error response:', errorText);
+                            throw new Error(`Server error: ${response.status}`);
+                          }
+                          
+                          const result = await response.json();
+                          console.log('Upload result:', result);
+                          console.log('Setting edit product image to:', result.url);
+                          setEditForm({ ...editForm, imagen_url: result.url });
+                        } catch (error: any) {
+                          console.error('Upload error:', error);
+                          alert(`Upload failed: ${error.message}`);
+                        } finally {
+                          setUploadingImg(false);
+                        }
+                      }}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-white hover:file:bg-accent/80 transition-all duration-200"
+                    />
+                    <span className="text-xs text-gray-500 whitespace-nowrap">Max 10MB (JPEG, PNG, WebP)</span>
+                    {uploadingImg && (
+                      <div className="flex items-center gap-2 text-accent font-medium">
+                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Uploading...
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* URL Option */}
+                <div className="border border-gray-200 rounded-xl p-4 bg-white">
+                  <h6 className="text-sm font-medium mb-2 text-gray-700">Or Enter Image URL</h6>
+                  <input 
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200" 
+                    type="url"
+                    value={editForm.imagen_url} 
+                    onChange={(e) => setEditForm({ ...editForm, imagen_url: e.target.value })} 
+                    placeholder="https://example.com/image.jpg or /images/uploads/image.jpg" 
+                  />
+                </div>
+
+                {/* Preview */}
+                {editForm.imagen_url && (
+                  <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <p className="text-xs text-gray-600 mb-2">Preview: {editForm.imagen_url}</p>
+                    <div className="flex items-center gap-3">
+                      <img 
+                        src={editForm.imagen_url} 
+                        alt="Product preview" 
+                        className="w-16 h-16 object-cover rounded-lg border"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900 truncate">{editForm.imagen_url}</p>
+                        <button
+                          type="button"
+                          onClick={() => setEditForm({ ...editForm, imagen_url: '' })}
+                          className="text-xs text-red-600 hover:text-red-800 mt-1 font-medium transition-colors duration-200"
+                        >
+                          Remove image
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="flex gap-4">
                 <div className="flex-1">
@@ -669,6 +860,17 @@ export default function Affiliates() {
               </div>
             </div>
             
+            {/* Image Gallery Section */}
+            <div className="mt-8 border-t border-gray-200 pt-8">
+              <ProductImageManager 
+                productId={editId!} 
+                onImagesChange={(images) => {
+                  // Optional: update local state if needed
+                  console.log('Images updated:', images);
+                }}
+              />
+            </div>
+            
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <button
                 onClick={async () => {
@@ -699,40 +901,6 @@ export default function Affiliates() {
                 </svg>
                 Save Changes
               </button>
-              
-              <div className="flex items-center gap-3">
-                <label className="text-sm font-semibold text-gray-700">Upload Image:</label>
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  className="text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-white hover:file:bg-accent/90 file:cursor-pointer"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    setUploadingImg(true);
-                    try {
-                      const fd = new FormData();
-                      fd.append('file', file);
-                      const res = await fetch(`/api/products/${editId}/image`, { method: 'POST', body: fd, credentials: 'include' });
-                      if (!res.ok) throw new Error('Could not upload image');
-                      await load();
-                    } catch (err: any) {
-                      alert(err?.message || 'Error uploading image');
-                    } finally {
-                      setUploadingImg(false);
-                    }
-                  }} 
-                />
-                {uploadingImg && (
-                  <div className="flex items-center gap-2 text-accent font-medium">
-                    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Uploading...
-                  </div>
-                )}
-              </div>
             </div>
           </div>
         </div>

@@ -15,8 +15,8 @@ export default {
           dark: "#c9a961",
         },
         accent: {
-          DEFAULT: "#f8f6f0",
-          dark: "#2a2a2a",
+          DEFAULT: "#b48b57",
+          dark: "#9a7948",
         },
         neutral: {
           DEFAULT: "#f5f5f5",
@@ -34,6 +34,57 @@ export default {
       boxShadow: {
         'hero': '0 8px 32px rgba(0,0,0,0.1)',
         'cta': '0 8px 25px rgba(212, 175, 55, 0.3)',
+      },
+      animation: {
+        'slideDown': 'slideDown 0.4s ease-out forwards',
+        'slideUp': 'slideUp 0.3s ease-in forwards',
+        'fadeIn': 'fadeIn 0.3s ease-out forwards',
+        'fadeOut': 'fadeOut 0.2s ease-in forwards',
+      },
+      keyframes: {
+        slideDown: {
+          '0%': { 
+            opacity: '0',
+            height: '0',
+            transform: 'translateY(-10px) scaleY(0.8)',
+            transformOrigin: 'top',
+          },
+          '50%': {
+            opacity: '0.7',
+            height: 'auto',
+            transform: 'translateY(-5px) scaleY(0.9)',
+          },
+          '100%': { 
+            opacity: '1',
+            height: 'auto',
+            transform: 'translateY(0) scaleY(1)',
+          },
+        },
+        slideUp: {
+          '0%': { 
+            opacity: '1',
+            height: 'auto',
+            transform: 'translateY(0) scaleY(1)',
+            transformOrigin: 'top',
+          },
+          '50%': {
+            opacity: '0.3',
+            transform: 'translateY(-5px) scaleY(0.9)',
+          },
+          '100%': { 
+            opacity: '0',
+            height: '0',
+            transform: 'translateY(-10px) scaleY(0.8)',
+          },
+        },
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(-5px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        fadeOut: {
+          '0%': { opacity: '1', transform: 'translateY(0)' },
+          '100%': { opacity: '0', transform: 'translateY(-5px)' },
+        },
       },
     },
   },

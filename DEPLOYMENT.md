@@ -187,6 +187,11 @@ docker build -t docker-stack-remix-landing-eclectiquebykmc:latest .
 docker run -d --name remix-landing-eclectiquebykmc \
   --network welltech-shared \
   -p 3010:3000 \
+  -e DB_HOST=postgres-db \
+  -e DB_PORT=5432 \
+  -e DB_USER=well \
+  -e DB_PASSWORD=REPLACE_ME \
+  -e DB_NAME=eclectiquebykmc_db \
   --restart unless-stopped \
   docker-stack-remix-landing-eclectiquebykmc:latest
 

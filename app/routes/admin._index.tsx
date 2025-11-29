@@ -170,6 +170,8 @@ export default function AdminPage() {
         </div>
         <div className="flex items-center gap-2">
           <a href="/admin/products" className="rounded-md border border-gray-300 px-3 py-2 text-sm hover:bg-black/5">Gestionar productos</a>
+          <a href="/admin/orders" className="rounded-md border border-gray-300 px-3 py-2 text-sm hover:bg-black/5">Gestionar pedidos</a>
+          <a href="/admin/stripe" className="rounded-md border border-gray-300 px-3 py-2 text-sm hover:bg-black/5">Configurar Stripe</a>
         </div>
       </div>
       {error ? <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div> : null}

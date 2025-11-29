@@ -49,11 +49,45 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const name = formData.get("name")?.toString();
   const email = formData.get("email")?.toString();
   const message = formData.get("message")?.toString();
+  
+  // Captcha validation fields
+  const honeypot = formData.get("website")?.toString();
+  const mathAnswer = formData.get("mathAnswer")?.toString();
+  const expectedAnswer = formData.get("expectedAnswer")?.toString();
+  const formStartTime = formData.get("formStartTime")?.toString();
 
+  // Basic validation
   if (!name || !email || !message) {
     return json({ error: "All fields are required" }, { status: 400 });
   }
 
+  // Anti-bot validations
+  
+  // 1. Honeypot check - if this field is filled, it's likely a bot
+  if (honeypot && honeypot.trim().length > 0) {
+    console.log('Bot detected: honeypot field was filled');
+    return json({ error: "Error processing your request. Please try again." }, { status: 400 });
+  }
+
+  // 2. Math captcha validation
+  if (!mathAnswer || !expectedAnswer || mathAnswer !== expectedAnswer) {
+    return json({ error: "Please solve the math question correctly" }, { status: 400 });
+  }
+
+  // 3. Timing validation - form should not be submitted too quickly
+  if (formStartTime) {
+    const startTime = parseInt(formStartTime);
+    const submissionTime = Date.now();
+    const timeDifference = submissionTime - startTime;
+    
+    // If form was submitted in less than 3 seconds, it's likely a bot
+    if (timeDifference < 3000) {
+      console.log('Bot detected: form submitted too quickly', timeDifference);
+      return json({ error: "Please take your time filling out the form" }, { status: 400 });
+    }
+  }
+
+  // Content validation
   if (name.trim().length < 2) {
     return json({ error: "Name must be at least 2 characters" }, { status: 400 });
   }
@@ -64,6 +98,17 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   if (message.trim().length < 5) {
     return json({ error: "Message must be at least 5 characters" }, { status: 400 });
+  }
+
+  // Additional spam content checks
+  const spamKeywords = ['viagra', 'casino', 'lottery', 'click here', 'make money', 'free money', 'urgent', 'congratulations you won'];
+  const contentToCheck = `${name} ${email} ${message}`.toLowerCase();
+  
+  for (const keyword of spamKeywords) {
+    if (contentToCheck.includes(keyword)) {
+      console.log('Potential spam detected:', keyword);
+      return json({ error: "Message could not be processed. Please revise your content." }, { status: 400 });
+    }
   }
 
   const client = await pool.connect();

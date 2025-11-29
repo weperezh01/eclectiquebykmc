@@ -121,8 +121,25 @@ type Producto = {
   categorias?: string[];
 };
 
+type FeaturedGuide = {
+  slug: string;
+  title: string;
+  intro: string;
+  coverImage?: string;
+  guideType?: string;
+  items: Array<{
+    title: string;
+    image: string;
+    href: string;
+    is_featured?: boolean;
+  }>;
+};
+
 export default function Index() {
   const [items, setItems] = useState<Producto[]>([]);
+  const [guideItems, setGuideItems] = useState<Producto[]>([]);
+  const [featuredLooks, setFeaturedLooks] = useState<FeaturedGuide[]>([]);
+  const [featuredDeals, setFeaturedDeals] = useState<FeaturedGuide[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const sliderRef = useRef<HTMLDivElement | null>(null);
@@ -135,12 +152,46 @@ export default function Index() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch('/api/products?activo=true&limit=60');
-        if (!res.ok) throw new Error(`Error ${res.status}`);
-        const data = await res.json();
-        setItems(data);
+        // Cargar productos regulares
+        const resProducts = await fetch('/api/products?activo=true&limit=60');
+        if (!resProducts.ok) throw new Error(`Error ${resProducts.status}`);
+        const productsData = await resProducts.json();
+        setItems(productsData);
+
+        // Cargar guías y extraer todos los items
+        const resGuides = await fetch('/api/guides');
+        if (!resGuides.ok) throw new Error(`Error guides ${resGuides.status}`);
+        const guidesData = await resGuides.json();
+        
+        // Convertir todos los guide items a formato de producto
+        const allGuideItems = guidesData.flatMap((guide: any) => 
+          guide.items.map((item: any) => ({
+            id: `guide-${guide.slug}-${item.title.toLowerCase().replace(/\s+/g, '-')}`,
+            titulo: item.title,
+            descripcion: `De la guía: ${guide.title}`,
+            tipo: 'afiliado' as const,
+            marketplace: 'Guías',
+            enlace_url: item.href,
+            imagen_url: item.image,
+            precio: null,
+            moneda: null,
+            destacado: item.is_featured || false,
+            fecha_creacion: new Date().toISOString(),
+            categorias: ['Guides', guide.title],
+          }))
+        );
+        setGuideItems(allGuideItems);
+
+        // Cargar guides destacados
+        const resFeatured = await fetch('/api/guides/featured');
+        if (resFeatured.ok) {
+          const featuredData = await resFeatured.json();
+          setFeaturedLooks(featuredData.looks || []);
+          setFeaturedDeals(featuredData.deals || []);
+        }
+        
       } catch (e: any) {
-        setError(e?.message || 'Error loading products');
+        setError(e?.message || 'Error loading data');
       } finally {
         setLoading(false);
       }
@@ -149,16 +200,21 @@ export default function Index() {
   }, []);
 
   const destacados = useMemo(() => {
-    const d = items.filter((p) => p.destacado).slice(0, 8);
-    if (d.length > 0) return d;
+    // Combinar productos destacados regulares con guide items destacados
+    const productosDestacados = items.filter((p) => p.destacado);
+    const guideItemsDestacados = guideItems.filter((p) => p.destacado);
+    const todosDestacados = [...productosDestacados, ...guideItemsDestacados];
+    
+    if (todosDestacados.length > 0) return todosDestacados.slice(0, 8);
     // fallback: últimos agregados
     return items.slice(0, 8);
-  }, [items]);
+  }, [items, guideItems]);
 
   const ultimos = useMemo(() => {
-    // mostrar últimos propios/afiliados mezclados
-    return items.slice(0, 8);
-  }, [items]);
+    // Combinar productos de la base de datos con todos los guide items
+    const todosProductos = [...items, ...guideItems];
+    return todosProductos.slice(0, 12);
+  }, [items, guideItems]);
 
   const getStep = useCallback(() => {
     const c = sliderRef.current;
@@ -194,10 +250,10 @@ export default function Index() {
 
   // Autoplay
   useEffect(() => {
-    if (paused || items.length === 0) return;
+    if (paused || ultimos.length === 0) return;
     const id = setInterval(() => next(), 5000);
     return () => clearInterval(id);
-  }, [paused, items.length, next]);
+  }, [paused, ultimos.length, next]);
 
   return (
     <main className="min-h-screen flex flex-col">
@@ -207,6 +263,14 @@ export default function Index() {
         subtitle2={HOME_COPY.sub2}
         primary={HOME_COPY.ctaPrimary}
       >
+        {/* Shop Deals button with same style as primary */}
+        <a
+          href="/guides?view=deals"
+          className="inline-flex items-center rounded-md bg-accent px-4 md:px-5 py-2.5 md:py-3 text-sm md:text-base font-semibold text-black hover:opacity-90"
+        >
+          Shop Deals
+        </a>
+        
         {/* Quick links within hero */}
         <div className="flex flex-wrap gap-3 md:gap-4 items-center">
           {[
@@ -238,7 +302,7 @@ export default function Index() {
             </div>
           </div>
           <div className="relative">
-            {items.length > 3 ? (
+            {ultimos.length > 3 ? (
               <>
                 <button
                   aria-label="Previous"
@@ -263,7 +327,7 @@ export default function Index() {
               onMouseLeave={() => setPaused(false)}
               className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2"
             >
-              {(items.slice(0, 12)).map((p) => (
+              {ultimos.map((p) => (
                 <div key={p.id} className="slider-card snap-start shrink-0 w-[260px] md:w-[300px]">
                   <Card
                     title={p.titulo}
@@ -272,6 +336,8 @@ export default function Index() {
                     note={p.precio ? `${p.precio} ${p.moneda || ''}` : p.marketplace || undefined}
                     label={p.marketplace ? `Shop on ${p.marketplace}` : 'Shop'}
                     tags={[p.marketplace || ''].concat(p.categorias || []).filter(Boolean).slice(0, 3)}
+                    productType={p.tipo}
+                    productId={p.id}
                   />
                 </div>
               ))}
@@ -306,6 +372,8 @@ export default function Index() {
                   note={p.precio ? `${p.precio} ${p.moneda || ''}` : p.marketplace || undefined}
                   label={p.marketplace ? `Shop on ${p.marketplace}` : 'Shop'}
                   tags={[p.marketplace || ''].concat(p.categorias || []).filter(Boolean).slice(0, 3)}
+                  productType={p.tipo}
+                  productId={p.id}
                 />
               ))}
             </Grid>
@@ -340,6 +408,8 @@ export default function Index() {
                   note={p.precio ? `${p.precio} ${p.moneda || ''}` : p.marketplace || undefined}
                   label={p.marketplace ? `Shop on ${p.marketplace}` : 'Shop'}
                   tags={[p.marketplace || ''].concat(p.categorias || []).filter(Boolean).slice(0, 3)}
+                  productType={p.tipo}
+                  productId={p.id}
                 />
               ))}
             </Grid>
@@ -355,6 +425,97 @@ export default function Index() {
         </div>
       </section>
 
+      {/* Featured Looks */}
+      {featuredLooks.length > 0 && (
+        <section className="bg-gray-50">
+          <div className="mx-auto max-w-6xl px-6 py-12">
+            <div className="mb-6 flex items-end justify-between">
+              <h2 className="text-2xl md:text-3xl font-bold">Featured Looks</h2>
+              <a href="/guides?type=Look" className="text-sm text-accent hover:underline">View all looks</a>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredLooks.slice(0, 3).map((guide) => (
+                <div key={guide.slug} className="group">
+                  <a href={`/guides/${guide.slug}`} className="block">
+                    <div className="aspect-[4/3] overflow-hidden rounded-lg bg-gray-200 mb-3">
+                      {guide.coverImage ? (
+                        <img
+                          src={guide.coverImage}
+                          alt={guide.title}
+                          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : guide.items[0]?.image ? (
+                        <img
+                          src={guide.items[0].image}
+                          alt={guide.title}
+                          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="h-full w-full bg-gray-200 flex items-center justify-center">
+                          <svg className="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    <h3 className="font-semibold text-lg group-hover:text-accent transition-colors">{guide.title}</h3>
+                    <p className="text-sm text-gray-600 mt-1">{guide.intro}</p>
+                    <p className="text-xs text-accent mt-2">{guide.items.length} items</p>
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Featured Deals */}
+      {featuredDeals.length > 0 && (
+        <section className="bg-white">
+          <div className="mx-auto max-w-6xl px-6 py-12">
+            <div className="mb-6 flex items-end justify-between">
+              <h2 className="text-2xl md:text-3xl font-bold">Featured Deals</h2>
+              <a href="/guides?type=Deal" className="text-sm text-accent hover:underline">View all deals</a>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredDeals.slice(0, 3).map((guide) => (
+                <div key={guide.slug} className="group">
+                  <a href={`/guides/${guide.slug}`} className="block">
+                    <div className="aspect-[4/3] overflow-hidden rounded-lg bg-gray-200 mb-3 relative">
+                      {guide.coverImage ? (
+                        <img
+                          src={guide.coverImage}
+                          alt={guide.title}
+                          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : guide.items[0]?.image ? (
+                        <img
+                          src={guide.items[0].image}
+                          alt={guide.title}
+                          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="h-full w-full bg-gray-200 flex items-center justify-center">
+                          <svg className="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
+                      <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-md text-xs font-semibold">
+                        DEAL
+                      </div>
+                    </div>
+                    <h3 className="font-semibold text-lg group-hover:text-accent transition-colors">{guide.title}</h3>
+                    <p className="text-sm text-gray-600 mt-1">{guide.intro}</p>
+                    <p className="text-xs text-accent mt-2">{guide.items.length} items</p>
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Disclosure corto */}
       <section className="bg-gray-50">
         <div className="mx-auto max-w-6xl px-6 py-10">
@@ -362,7 +523,7 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Newsletter */}
+      {/* Newsletter - HIDDEN temporarily per request
       <section className="bg-white">
         <div className="mx-auto max-w-3xl px-6 pb-12">
           <div className="rounded-2xl border border-black/10 bg-gradient-to-br from-gray-50 to-white p-6 shadow-sm">
@@ -418,6 +579,7 @@ export default function Index() {
           </div>
         </div>
       </section>
+      */}
     </main>
   );
 }

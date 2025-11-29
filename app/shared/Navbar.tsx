@@ -1,9 +1,12 @@
 import { Link, NavLink, useLocation, useNavigate } from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
+import { useCart } from "../context/CartContext";
+import CartSidebar from "../components/CartSidebar";
 
 const baseNav = [
   { to: "/", label: "Home" },
-  { to: "/shops", label: "Shops" },
+  { to: "/guides", label: "Shop Looks" },
+  { to: "/guides?view=deals", label: "Shop Deals" },
   { to: "/affiliates", label: "Affiliates" },
   // { to: "/marketplaces", label: "Marketplaces" }, // ocultado a solicitud
   { to: "/other-platforms", label: "Other platforms" },
@@ -15,6 +18,7 @@ const baseNav = [
 export default function Navbar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const { state: cartState, toggleCart } = useCart();
   const [open, setOpen] = useState(false);
   const [authed, setAuthed] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -154,6 +158,25 @@ export default function Navbar() {
                 {item.label}
               </NavLink>
             ))}
+
+            {/* Cart Button */}
+            <button
+              onClick={toggleCart}
+              className="relative inline-flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 hover:border-accent hover:text-accent transition-colors"
+              aria-label="Carrito de compras"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+              
+              {/* Item count badge */}
+              {cartState.itemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-accent text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                  {cartState.itemCount > 9 ? '9+' : cartState.itemCount}
+                </span>
+              )}
+            </button>
+
             {!authed ? (
               <>
                 {/* Login y registro ocultos por solicitud del usuario */}
@@ -340,6 +363,9 @@ export default function Navbar() {
         </aside>
         </div>
       )}
+      
+      {/* Cart Sidebar */}
+      <CartSidebar />
     </>
   );
 }

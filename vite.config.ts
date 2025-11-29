@@ -9,8 +9,8 @@ export default defineConfig({
         v3_fetcherPersist: true,
         v3_relativeSplatPath: true,
         v3_throwAbortReason: true,
-        v3_singleFetch: true,
-        v3_lazyRouteDiscovery: true,
+        v3_singleFetch: false,
+        v3_lazyRouteDiscovery: false,
       },
     }),
     tsconfigPaths(),
@@ -22,10 +22,19 @@ export default defineConfig({
   build: {
     rollupOptions: {
       external: ["pg"],
+      output: {
+        manualChunks: (id) => {
+          // Ensure API routes are included in server bundle
+          if (id.includes('/routes/api.')) {
+            return 'api-routes';
+          }
+        }
+      }
     },
   },
   ssr: {
     external: ["pg"],
+    noExternal: /^(?!.*node_modules).*$/,
   },
 });
 

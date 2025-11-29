@@ -10,6 +10,7 @@ import {
 import styles from "./styles/tailwind.css?url";
 import Navbar from "./shared/Navbar";
 import Footer from "./shared/Footer";
+import { CartProvider } from "./context/CartContext";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: styles },
@@ -44,9 +45,11 @@ export default function App() {
         <Links />
       </head>
       <body className="min-h-full bg-white text-gray-900">
-        <Navbar />
-        <Outlet />
-        <Footer />
+        <CartProvider>
+          <Navbar />
+          <Outlet />
+          <Footer />
+        </CartProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

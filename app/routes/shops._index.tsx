@@ -69,6 +69,7 @@ type Producto = {
   imagen_url?: string | null;
   precio?: number | null;
   moneda?: string | null;
+  categorias: string[];
 };
 
 export default function TiendasIndex() {
@@ -87,6 +88,7 @@ export default function TiendasIndex() {
     precio: "",
     moneda: "USD",
     destacado: false,
+    categorias: ["Shop Looks"] as string[],
   });
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
@@ -95,7 +97,7 @@ export default function TiendasIndex() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/products?activo=true');
+      const res = await fetch('/api/products?activo=true&category=Shop%20Looks');
       if (!res.ok) throw new Error(`Error ${res.status}`);
       const data = await res.json();
       const allow = new Set(['Poshmark','Mercari','eBay','TikTok Showcase']);
@@ -136,6 +138,7 @@ export default function TiendasIndex() {
         precio: form.precio ? Number(form.precio) : undefined,
         moneda: form.moneda || undefined,
         destacado: !!form.destacado,
+        categorias: form.categorias,
       };
       const res = await fetch('/api/products', {
         method: 'POST',
@@ -149,7 +152,17 @@ export default function TiendasIndex() {
         throw new Error(msg || `Error ${res.status}`);
       }
       setSavedMsg('Product added');
-      setForm({ titulo: "", descripcion: "", enlace_url: "", imagen_url: "", marketplace: "Poshmark", precio: "", moneda: "USD", destacado: false });
+      setForm({ 
+        titulo: "", 
+        descripcion: "", 
+        enlace_url: "", 
+        imagen_url: "", 
+        marketplace: "Poshmark", 
+        precio: "", 
+        moneda: "USD", 
+        destacado: false,
+        categorias: ["Shop Looks"]
+      });
       await load();
     } catch (e: any) {
       setError(e?.message || 'Could not save');
@@ -288,13 +301,98 @@ export default function TiendasIndex() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Image URL</label>
-                <input 
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200" 
-                  value={form.imagen_url} 
-                  onChange={(e) => setForm({ ...form, imagen_url: e.target.value })} 
-                  placeholder="https://example.com/image.jpg" 
-                />
+                <label className="block text-sm font-semibold text-gray-700 mb-3">Product Image</label>
+                
+                {/* Upload File Option */}
+                <div className="border border-gray-200 rounded-xl p-4 mb-4 bg-gray-50/50">
+                  <h6 className="text-sm font-medium mb-2 text-gray-700">Upload from Device</h6>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        
+                        console.log('Shop product file selected:', file.name, file.size, file.type);
+                        setError(null);
+                        
+                        // Show loading state
+                        setError('Uploading...');
+                        
+                        const formData = new FormData();
+                        formData.append('image', file);
+                        
+                        try {
+                          console.log('Making upload request...');
+                          const response = await fetch('/admin/upload', {
+                            method: 'POST',
+                            body: formData
+                          });
+                          
+                          console.log('Response status:', response.status);
+                          
+                          if (!response.ok) {
+                            const errorText = await response.text();
+                            console.log('Error response:', errorText);
+                            throw new Error(`Server error: ${response.status}`);
+                          }
+                          
+                          const result = await response.json();
+                          console.log('Upload result:', result);
+                          console.log('Setting shop product image to:', result.url);
+                          setForm({ ...form, imagen_url: result.url });
+                          setError('Upload successful!');
+                          setTimeout(() => setError(null), 2000);
+                        } catch (error: any) {
+                          console.error('Upload error:', error);
+                          setError(`Upload failed: ${error.message}`);
+                        }
+                      }}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-white hover:file:bg-accent/80 transition-all duration-200"
+                    />
+                    <span className="text-xs text-gray-500 whitespace-nowrap">Max 10MB (JPEG, PNG, WebP)</span>
+                  </div>
+                </div>
+
+                {/* URL Option */}
+                <div className="border border-gray-200 rounded-xl p-4 bg-white">
+                  <h6 className="text-sm font-medium mb-2 text-gray-700">Or Enter Image URL</h6>
+                  <input 
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200" 
+                    type="url"
+                    value={form.imagen_url} 
+                    onChange={(e) => setForm({ ...form, imagen_url: e.target.value })} 
+                    placeholder="https://example.com/image.jpg or /images/uploads/image.jpg" 
+                  />
+                </div>
+
+                {/* Preview */}
+                {form.imagen_url && (
+                  <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <p className="text-xs text-gray-600 mb-2">Preview: {form.imagen_url}</p>
+                    <div className="flex items-center gap-3">
+                      <img 
+                        src={form.imagen_url} 
+                        alt="Product preview" 
+                        className="w-16 h-16 object-cover rounded-lg border"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900 truncate">{form.imagen_url}</p>
+                        <button
+                          type="button"
+                          onClick={() => setForm({ ...form, imagen_url: '' })}
+                          className="text-xs text-red-600 hover:text-red-800 mt-1 font-medium transition-colors duration-200"
+                        >
+                          Remove image
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="flex gap-4">
                 <div className="flex-1">

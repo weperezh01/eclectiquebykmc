@@ -6,9 +6,21 @@ export default function ContactForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [mathAnswer, setMathAnswer] = useState("");
+  const [formStartTime] = useState(Date.now());
   const actionData = useActionData<{ success?: string; error?: string }>();
 
-  const valid = name.trim().length > 1 && /@/.test(email) && message.trim().length > 5;
+  // Generate simple math challenge
+  const [mathChallenge] = useState(() => {
+    const num1 = Math.floor(Math.random() * 10) + 1;
+    const num2 = Math.floor(Math.random() * 10) + 1;
+    const operator = Math.random() > 0.5 ? '+' : '-';
+    const question = operator === '+' ? `${num1} + ${num2}` : `${Math.max(num1, num2)} - ${Math.min(num1, num2)}`;
+    const answer = operator === '+' ? num1 + num2 : Math.max(num1, num2) - Math.min(num1, num2);
+    return { question, answer };
+  });
+
+  const valid = name.trim().length > 1 && /@/.test(email) && message.trim().length > 5 && mathAnswer === String(mathChallenge.answer);
 
   // Clear form after successful submission
   useEffect(() => {
@@ -16,6 +28,7 @@ export default function ContactForm() {
       setName("");
       setEmail("");
       setMessage("");
+      setMathAnswer("");
     }
   }, [actionData?.success]);
 
@@ -34,6 +47,30 @@ export default function ContactForm() {
       )}
 
       <Form method="post" className="grid gap-4">
+        {/* Honeypot field - hidden from users but visible to bots */}
+        <input
+          type="text"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          style={{ 
+            position: 'absolute', 
+            left: '-9999px', 
+            visibility: 'hidden',
+            opacity: 0,
+            height: 0,
+            width: 0
+          }}
+          aria-hidden="true"
+        />
+        
+        {/* Hidden timestamp field for timing validation */}
+        <input
+          type="hidden"
+          name="formStartTime"
+          value={formStartTime}
+        />
+        
         <input
           type="text"
           name="name"
@@ -64,6 +101,34 @@ export default function ContactForm() {
           required
           aria-label="Message"
         />
+        
+        {/* Math captcha */}
+        <div className="border border-gray-300 rounded-md p-4 bg-gray-50">
+          <label htmlFor="mathCaptcha" className="block text-sm font-medium text-gray-700 mb-2">
+            Are you a robot? Please solve: {mathChallenge.question} = ?
+          </label>
+          <input
+            id="mathCaptcha"
+            type="number"
+            name="mathAnswer"
+            placeholder="Enter your answer"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent"
+            value={mathAnswer}
+            onChange={(e) => setMathAnswer(e.target.value)}
+            required
+            aria-label={`Math question: ${mathChallenge.question}`}
+          />
+          <input
+            type="hidden"
+            name="mathQuestion"
+            value={mathChallenge.question}
+          />
+          <input
+            type="hidden"
+            name="expectedAnswer"
+            value={mathChallenge.answer}
+          />
+        </div>
         <div className="flex items-center gap-3">
           <button
             type="submit"

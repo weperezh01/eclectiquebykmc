@@ -1,8 +1,12 @@
-import type { ActionFunctionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { writeFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
+
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  return json({ error: 'Method not allowed' }, { status: 405 });
+};
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   if (request.method !== 'POST') {
@@ -10,10 +14,18 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 
   try {
+    console.log('Admin upload request received');
     const formData = await request.formData();
     const file = formData.get('image') as File;
+    
+    console.log('File info:', { 
+      name: file?.name, 
+      size: file?.size, 
+      type: file?.type 
+    });
 
     if (!file || file.size === 0) {
+      console.log('No file provided or file size is 0');
       return json({ error: 'No file provided' }, { status: 400 });
     }
 
@@ -25,11 +37,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       }, { status: 400 });
     }
 
-    // Validate file size (max 5MB)
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    // Validate file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    console.log('File size check:', file.size, 'max:', maxSize);
     if (file.size > maxSize) {
+      console.log('File too large');
       return json({ 
-        error: 'File too large. Maximum size is 5MB.' 
+        error: 'File too large. Maximum size is 10MB.' 
       }, { status: 400 });
     }
 
@@ -46,12 +60,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     // Save file
     const filepath = path.join(uploadsDir, filename);
+    console.log('Saving file to:', filepath);
     const buffer = Buffer.from(await file.arrayBuffer());
     await writeFile(filepath, buffer);
+    console.log('File saved successfully');
 
     // Return the public URL
     const publicUrl = `/images/uploads/${filename}`;
 
+    console.log('Upload successful, returning URL:', publicUrl);
     return json({
       success: true,
       url: publicUrl,

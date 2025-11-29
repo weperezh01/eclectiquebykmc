@@ -8,9 +8,24 @@ type GuideItem = {
   href: string;
 };
 
+type GuideVideo = {
+  id?: number;
+  platform: string;
+  video_url: string;
+  youtube_url?: string; // Keep for backward compatibility
+  title?: string;
+  is_primary?: boolean;
+};
+
 type Guide = {
   title: string;
   intro: string;
+  youtubeUrl?: string;
+  coverImage?: string;
+  isPublic?: boolean;
+  isFeatured?: boolean;
+  guideType?: string;
+  videos?: GuideVideo[];
   items: GuideItem[];
 };
 
@@ -45,11 +60,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
     if (method === "PUT") {
       const updatedGuide: Guide = await request.json();
       
+      console.log('=== API GUIDES PUT REQUEST ===');
+      console.log('Slug:', slug);
+      console.log('Updated guide data received:', updatedGuide);
+      console.log('Videos in request:', updatedGuide.videos);
+      console.log('Videos length:', updatedGuide.videos?.length || 0);
+      
       if (!updatedGuide.title || !updatedGuide.intro) {
         return json({ error: "Missing required fields" }, { status: 400 });
       }
 
+      console.log('Calling updateGuide with:', updatedGuide);
       await updateGuide(slug, updatedGuide);
+      console.log('updateGuide completed successfully');
       return json({ success: true });
     }
 
