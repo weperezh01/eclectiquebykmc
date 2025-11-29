@@ -583,20 +583,32 @@ export default function PaymentPage() {
     }
   }, [loaderData]);
 
-  // Redirect if cart is empty
+  // Redirect if cart is empty (but not if we're in success state or just completed purchase)
   useEffect(() => {
-    if (items.length === 0 && step !== 'success') {
+    console.log('=== REDIRECT CHECK ===');
+    console.log('items.length:', items.length);
+    console.log('step:', step);
+    console.log('orderId:', orderId);
+    console.log('Would redirect?', items.length === 0 && step !== 'success' && !orderId);
+    
+    if (items.length === 0 && step !== 'success' && !orderId) {
+      console.log('REDIRECTING TO CART - cart empty and not in success state');
       window.location.href = '/cart';
     }
-  }, [items.length, step]);
+  }, [items.length, step, orderId]);
 
   // Handle action response
   useEffect(() => {
+    console.log('=== actionData changed ===');
+    console.log('actionData:', actionData);
+    
     if (actionData) {
       if (actionData.error) {
+        console.log('Action error:', actionData.error);
         setError(actionData.error);
         setProcessing(false);
       } else if (actionData.success && actionData.intentId) {
+        console.log('Payment intent created:', actionData.intentId);
         setPaymentIntent(actionData);
         setStep('payment');
         setError(null);
@@ -608,16 +620,26 @@ export default function PaymentPage() {
           }
         } catch {}
       } else if (actionData.success && actionData.orderId) {
+        console.log('=== PAYMENT CONFIRMED - SHOWING SUCCESS PAGE ===');
+        console.log('orderId:', actionData.orderId);
+        console.log('order details:', actionData.order);
+        
         // Payment confirmed -> show success within the same page
         setOrderId(String(actionData.orderId));
         setOrderSummary(actionData.order || null);
         setStep('success');
         setProcessing(false);
-        try {
-          clearCart();
-          window.localStorage.removeItem('checkout_intent_id');
-          window.localStorage.removeItem('checkout_intent_client_secret');
-        } catch {}
+        console.log('Step set to success, orderId set to:', String(actionData.orderId));
+        
+        // Clear cart and storage after state is set (use setTimeout to ensure state updates first)
+        setTimeout(() => {
+          console.log('Clearing cart and localStorage...');
+          try {
+            clearCart();
+            window.localStorage.removeItem('checkout_intent_id');
+            window.localStorage.removeItem('checkout_intent_client_secret');
+          } catch {}
+        }, 500); // Increased timeout to ensure state updates
       }
     }
   }, [actionData]);
@@ -674,11 +696,13 @@ export default function PaymentPage() {
               const pi = await sj.retrievePaymentIntent(storedClientSecret);
               const status = pi.paymentIntent?.status;
               if (status === 'succeeded' || status === 'processing' || status === 'requires_capture') {
-                const formEl = document.getElementById('confirm-payment-form') as HTMLFormElement | null;
-                if (formEl) {
-                  if (typeof (formEl as any).requestSubmit === 'function') (formEl as any).requestSubmit();
-                  else formEl.submit();
-                }
+                // Submit confirmation via Remix to create the order
+                const fd = new FormData();
+                fd.append('action', 'confirm-payment');
+                fd.append('intentId', storedId || intentIdFallback);
+                fd.append('paymentMethod', 'stripe');
+                if (pi.paymentIntent?.id) fd.append('transactionId', pi.paymentIntent.id);
+                submit(fd, { method: 'POST' });
               }
             }
           } catch {}
@@ -758,7 +782,10 @@ export default function PaymentPage() {
             
             // Use Remix's useSubmit hook for proper form submission
             console.log('Submitting through useSubmit...');
+            console.log('Current step before submit:', step);
+            console.log('Current orderId before submit:', orderId);
             submit(formData, { method: 'POST' });
+            console.log('Submit called successfully');
             
           } catch (submitError: any) {
             setProcessing(false);
